@@ -1,11 +1,11 @@
 # slackbot-botkit-es6-example
 
-SlackBot example using (botkit)[http://howdy.ai/botkit/] but with ES6 syntax (compiled to ES5 ondemand by using (Babel)[https://babeljs.io]).
+SlackBot example using [botkit](http://howdy.ai/botkit/) but with ES6 syntax (compiled to ES5 ondemand by using [Babel](https://babeljs.io)).
 
 
 # Usage
 
-You need (Node)[https://nodejs.org/] installed with npm.
+You need [Node](https://nodejs.org/) installed with npm.
 
 You will also need to have a bot setup in your Slack integrations (use https://my.slack.com/services/new/bot) and export the API TOKEN in your shell environment before you start the bot.
 
