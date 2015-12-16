@@ -1,0 +1,38 @@
+{
+  "name": "slackbot-botkit-es6-example",
+  "version": "0.1.0",
+  "description": "SlackBot example using botkit but with ES6 syntax (compiled to ES5 ondemand by using Babel).",
+  "author": "Daniel Kurashige-Gollub <daniel@kurashige-gollub.de>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "./server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dgollub/slackbot-botkit-es6-example.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dgollub/slackbot-botkit-es6-example/issues"
+  },
+  "homepage": "https://github.com/dgollub/slackbot-botkit-es6-example#readme",
+  "keywords": [
+    "slackbot",
+    "bot",
+    "slack",
+    "botkit",
+    "es6",
+    "node"
+  ],
+  "dependencies": {
+    "babel": "^6.3.13",
+    "botkit": "latest"
+  },
+  "devDependencies": {
+    "babel-core": "^6.3.17",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13",
+    "lodash": "^3.10.1",
+    "thread-sleep": "^1.0.4"
+  }
+}
