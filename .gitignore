@@ -1,4 +1,6 @@
 
+data/
+
 # Created by https://www.gitignore.io/api/linux,osx,windows,sublimetext,sass,node,vim,vagrant
 
 ### Linux ###
@@ -17,7 +19,8 @@
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*

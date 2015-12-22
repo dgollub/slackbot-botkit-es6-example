@@ -4,6 +4,7 @@
 
 "use strict";
 
+import { db } from './db.es6';
 import { Bot } from './bot.es6';
 import { formatUptime } from './utils.es6';
 
