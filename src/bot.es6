@@ -20,7 +20,7 @@ const LISTEN_TO_ALL_BUT_AMBIENT = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_ME
 const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 
 const CMDS_ADD_FACT = ["add fact", "insert fact"];
-const CMDS_UPDATE_FACT = ["revise fact", "udpate fact"];
+const CMDS_UPDATE_FACT = ["revise fact", "update fact"];
 const CMDS_LIST_FACTS = ["tell facts", "list facts"];
 const CMDS_TELL_FACT = ["tell fact", "random fact", "list fact"];
 
@@ -193,6 +193,31 @@ class Bot {
     }
     onUpdateFact(bot, message) {
         console.log("onUpdateFact");
+        // 
+        let msg = removeCommandFromMessage(message, CMDS_UPDATE_FACT);
+        let tmp = msg.split(" ");
+        let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);
+
+        console.log("tmp, factId", tmp, factId);
+        
+        if (!isNaN(factId) && factId > 0) {
+            let fact = msg.substr(tmp[0].length).trim();
+            dbUpdateFact(factId, fact)
+                .then((stmt) => {
+                    console.log("statement", stmt);
+                    if (stmt.changes === 0) {
+                        bot.reply(message, "The specified fact wasn't found.");
+                    } else {
+                        bot.reply(message, "Updated the fact.");
+                    }
+                })
+                .catch((err) => {
+                    console.log("error?", err);
+                    bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
+                });
+        } else {
+            bot.reply(message, 'You will need to provide a Fact#ID as first argument.');
+        }
     }
 
 }

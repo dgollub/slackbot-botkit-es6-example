@@ -76,9 +76,9 @@ let dbAddFact = (fact) => {
 let dbUpdateFact = (id, fact) => {
     console.log("updateFact");
     let p = new Promise((resolve, reject) => {
-        db.run("UPDATE fact SET fact = ?5 WHERE id = ?", {
-            1: id,
-            5: fact
+        db.run("UPDATE fact SET fact = $fact WHERE id = $id", {
+            $id: id,
+            $fact: fact
         }, function(err) {
             if (err) {
                 console.error("DB UPDATE error!", err);
