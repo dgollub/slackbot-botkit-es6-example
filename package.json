@@ -5,7 +5,9 @@
   "author": "Daniel Kurashige-Gollub <daniel@kurashige-gollub.de>",
   "license": "MIT",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "watch:lint": "watch 'npm run lint' ./src",
+    "lint": "eslint --max-warnings 9999 ./src/**"
   },
   "main": "./server.js",
   "repository": {
@@ -26,7 +28,8 @@
   ],
   "dependencies": {
     "babel": "^6.3.13",
-    "botkit": "latest"
+    "botkit": "latest",
+    "eslint": "^1.10.3"
   },
   "devDependencies": {
     "babel-core": "^6.3.17",
@@ -35,6 +38,7 @@
     "bluebird": "^3.1.1",
     "lodash": "^3.10.1",
     "sqlite3": "^3.1.1",
-    "thread-sleep": "^1.0.4"
+    "thread-sleep": "^1.0.4",
+    "watch": "^0.17.1"
   }
 }

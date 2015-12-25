@@ -9,13 +9,18 @@ import { Bot } from './bot.es6';
 import { formatUptime } from './utils.es6';
 
 
-let Botkit = require('Botkit')
+let Botkit = require('Botkit');
 let os = require('os');
 
 let slackbotapitoken = process.env.slackbotapitoken || null;
 
 let controller = Botkit.slackbot({
     debug: false
+    // we could use the "storage: my_storage_provider" syntax and implement our own storage provider
+    // using sqlite, following the API in this exapmle:
+    // https://github.com/howdyai/botkit/blob/master/lib/simple_storage.js
+    // However, I do feel a bit limited by that API at this point, so I'll
+    // just implement something else using sqlite on its own.
 });
 
 let cthulhuBot = null;
@@ -76,7 +81,7 @@ controller.hears(['call me (.*)'], LISTEN_TO, (bot, message) => {
         if (!user) {
             user = {
                 id: message.user
-            }
+            };
         }
         
         user.name = name;
@@ -121,9 +126,9 @@ controller.hears(['shutdown'], LISTEN_TO, (bot, message) => {
                     conversation.say("Bye!");
                     conversation.next();
 
-                    setTimeout(function() {
+                    setTimeout(() => {
                         process.exit();
-                    }, 3000);
+                    }, 500);
 
                 }
             },

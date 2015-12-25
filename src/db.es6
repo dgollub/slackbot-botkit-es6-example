@@ -57,13 +57,17 @@ let dbGetFacts = () => {
 let dbAddFact = (fact) => {
     console.log("addFact");
     let p = new Promise((resolve, reject) => {
-        db.run("INSERT INTO fact VALUES (?) ", fact, (err) => {
+        // NOTE(dkg): have to use ES5 syntax for callback, because ES6 fat arrow functions
+        //            have their own way with 'this', which doesn't work with the sqlite
+        //            nicely in this case.
+        // see details here https://github.com/mapbox/node-sqlite3/issues/560
+        db.run("INSERT INTO fact (fact) VALUES (?) ", fact.trim(), function(err) {
             if (err) {
                 console.error("DB INSERT error!", err);
                 reject(err);
-                return;
+            } else {
+                resolve(this);
             }
-            resolve(this);
         });
     });
     return p;
@@ -75,13 +79,13 @@ let dbUpdateFact = (id, fact) => {
         db.run("UPDATE fact SET fact = ?5 WHERE id = ?", {
             1: id,
             5: fact
-        }, (err) => {
+        }, function(err) {
             if (err) {
                 console.error("DB UPDATE error!", err);
                 reject(err);
-                return;
+            } else {
+                resolve(this);    
             }
-            resolve(this);
         });
     });
     return p;
