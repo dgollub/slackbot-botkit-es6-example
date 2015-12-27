@@ -13,6 +13,8 @@ if (!process.env.slackbotapitoken) {
 
 console.log("Compiling ES6 code before startup ...");
 
+
+require("babel-polyfill");
 require("babel-core/register"); // will translate all other includes via babel so we can use es6 syntax
 require("./src/controllerSetup.es6"); // this will spawn a process that keeps on running which will handle the bot/slack communication and reponses etc.
 

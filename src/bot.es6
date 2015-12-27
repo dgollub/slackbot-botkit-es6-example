@@ -2,14 +2,10 @@
 // Our core logic for our bot is here.
 // 
 
-// import { formatUptime } from './utils.es6';
-import { db, dbGetFacts, dbAddFact, dbUpdateFact } from './db.es6';
 import { _ } from 'lodash';
+import { db } from './db.es6';
+import { FactCommand } from './commands/FactCommand.es6';
 
-if (!Array.prototype.findIndex) {
-    // console.warn("Array does not support findIndex method.");
-    throw new Error("Array does not support findIndex method.");
-}
 
 const LISTEN_TO_DIRECT_MESSAGE = "direct_message";
 const LISTEN_TO_DIRECT_MENTION = "direct_mention";
@@ -19,10 +15,9 @@ const LISTEN_TO_AMBIENT = "ambient";
 const LISTEN_TO_ALL_BUT_AMBIENT = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 
-const CMDS_ADD_FACT = ["add fact", "insert fact"];
-const CMDS_UPDATE_FACT = ["revise fact", "update fact"];
-const CMDS_LIST_FACTS = ["tell facts", "list facts"];
-const CMDS_TELL_FACT = ["tell fact", "random fact", "list fact"];
+
+const CMDS_TELL_GIT = ["tell git", "branch", "commit", "show git", "show version", "version"];
+
 
 class Bot {
 
@@ -35,10 +30,7 @@ class Bot {
         this.onTeamJoin = this.onTeamJoin.bind(this);
         this.updateCacheUserInfo  = this.updateCacheUserInfo.bind(this);
 
-        this.onGetFacts = this.onGetFacts.bind(this);
-        this.onGetRandomFact = this.onGetRandomFact.bind(this);
-        this.onUpdateFact = this.onUpdateFact.bind(this);
-        this.onAddFact = this.onAddFact.bind(this);
+        this.onShowGitInformation = this.onShowGitInformation.bind(this);
 
         this.listenTo = this.listenTo.bind(this);
 
@@ -47,10 +39,10 @@ class Bot {
         this.controller.on('team_join', this.onTeamJoin);
         this.controller.on('user_change', this.onUserChange);
 
-        this.listenTo(CMDS_LIST_FACTS, LISTEN_TO_ALL_BUT_AMBIENT, this.onGetFacts);
-        this.listenTo(CMDS_TELL_FACT, LISTEN_TO_ALL_BUT_AMBIENT, this.onGetRandomFact);
-        this.listenTo(CMDS_ADD_FACT, LISTEN_TO_ALL_BUT_AMBIENT, this.onAddFact);
-        this.listenTo(CMDS_UPDATE_FACT, LISTEN_TO_ALL_BUT_AMBIENT, this.onUpdateFact);
+        this.commands = [];
+        this.commands.push(new FactCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
+
+        this.listenTo(CMDS_TELL_GIT, LISTEN_TO_ALL_BUT_AMBIENT, this.onShowGitInformation);
     }
 
     listenTo(messages, whatToListenTo, callback) {
@@ -59,6 +51,10 @@ class Bot {
         this.controller.hears(ms, whatToListenTo, callback);
     }
 
+    onShowGitInformation(bot, message) {
+        console.log("onShowGitInformation");        
+    }        
+    
     onTeamJoin(bot, message) {
         this.updateCacheUserInfo(message.user);
     }
@@ -133,119 +129,8 @@ class Bot {
 
     }
 
-    onGetFacts(bot, message) {
-        console.log("onGetFacts");
-
-        dbGetFacts()
-            .then((facts) => {
-                console.log("facts?", facts);
-                if (!facts || facts.length === 0) {
-                    bot.reply(message, "I don't know anything right now.");
-                } else {
-                    // let factIdx = _.random(0, facts.length - 1);
-                    // let fact = facts[factIdx];
-                    // bot.reply(message, `Random fact #${fact.id}: *${fact.fact}*`);
-                    let msg = "```" + _.reduce(facts, (result, fact) => {
-                        return `${result}\n#${fact.id}: ${fact.fact}`;
-                    }, "") + "```";
-                    bot.reply(message, `Known facts:\n${msg}`);
-                }
-            })
-            .catch((err) => {
-                console.log("error?", err);
-                bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-            });
-    }
-    onGetRandomFact(bot, message) {
-        console.log("onGetRandomFact");
-
-        dbGetFacts()
-            .then((facts) => {
-                console.log("facts?", facts);
-                if (!facts || facts.length === 0) {
-                    bot.reply(message, "I don't know anything right now.");
-                } else {
-                    let factIdx = _.random(0, facts.length - 1);
-                    let fact = facts[factIdx];
-                    let factNum = `Random fact *#${fact.id}*: `;
-                    bot.reply(message, factNum + "```" + fact.fact + "```");
-                }
-            })
-            .catch((err) => {
-                console.log("error?", err);
-                bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-            });
-    }
-    onAddFact(bot, message) {
-        console.log("onAddFact");
-
-        // TODO(dkg): add security/auth stuff here.
-        let fact = removeCommandFromMessage(message, CMDS_ADD_FACT);
-        
-        dbAddFact(fact)
-            .then((stmt) => {
-                bot.reply(message, "Added the fact to my knowledge base. ID#" + stmt.lastID);
-            })
-            .catch((err) => {
-                console.log("error?", err);
-                bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-            });
-    }
-    onUpdateFact(bot, message) {
-        console.log("onUpdateFact");
-        // 
-        let msg = removeCommandFromMessage(message, CMDS_UPDATE_FACT);
-        let tmp = msg.split(" ");
-        let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);
-
-        console.log("tmp, factId", tmp, factId);
-        
-        if (!isNaN(factId) && factId > 0) {
-            let fact = msg.substr(tmp[0].length).trim();
-            dbUpdateFact(factId, fact)
-                .then((stmt) => {
-                    console.log("statement", stmt);
-                    if (stmt.changes === 0) {
-                        bot.reply(message, "The specified fact wasn't found.");
-                    } else {
-                        bot.reply(message, "Updated the fact.");
-                    }
-                })
-                .catch((err) => {
-                    console.log("error?", err);
-                    bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-                });
-        } else {
-            bot.reply(message, 'You will need to provide a Fact#ID as first argument.');
-        }
-    }
 
 }
 
-let removeCommandFromMessage = (msg, commands) => {
-    let text = (msg.text || "").trim();
-
-    if (!Array.isArray(commands)) {
-        commands = [commands];
-    }
-
-    for (let cmd of commands) {
-        let pos = text.toLowerCase().indexOf(cmd.toLowerCase());
-        // TODO(dkg): maybe make sure to only remove the command if it is at
-        //            the beginning of the text and not part of it?        
-        if (pos > -1 && pos < 3) {
-            text = text.substr(pos + cmd.length).trim();
-        }
-    }
-
-    if (text[0] == '"') {
-        text = text.substr(1).trim();
-    }
-    if (text.substr(-1) == '"') {
-        text = text.substr(0, text.length - 1).trim();
-    }
-
-    return text;
-};
 
 export { Bot };

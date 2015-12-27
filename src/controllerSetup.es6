@@ -4,7 +4,7 @@
 
 "use strict";
 
-import { db } from './db.es6';
+import { db, initializeDatabaseTables } from './db.es6';
 import { Bot } from './bot.es6';
 import { formatUptime } from './utils.es6';
 
@@ -30,6 +30,8 @@ let startupCallback = (err, bot, payload) => {
         console.error("startup callback", err);
         throw new Error("Could not connect to Slack!");
     }
+
+    initializeDatabaseTables();
 
     cthulhuBot = new Bot(controller, payload);
     

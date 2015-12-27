@@ -25,5 +25,32 @@ let formatUptime = (uptime) => {
 };
 
 
-export { formatUptime };
+let removeCommandFromMessage = (msg, commands) => {
+    let text = (msg.text || "").trim();
+
+    if (!Array.isArray(commands)) {
+        commands = [commands];
+    }
+
+    for (let cmd of commands) {
+        let pos = text.toLowerCase().indexOf(cmd.toLowerCase());
+        // TODO(dkg): maybe make sure to only remove the command if it is at
+        //            the beginning of the text and not part of it?        
+        if (pos > -1 && pos < 3) {
+            text = text.substr(pos + cmd.length).trim();
+        }
+    }
+
+    if (text[0] == '"') {
+        text = text.substr(1).trim();
+    }
+    if (text.substr(-1) == '"') {
+        text = text.substr(0, text.length - 1).trim();
+    }
+
+    return text;
+};
+
+
+export { formatUptime, removeCommandFromMessage };
 
