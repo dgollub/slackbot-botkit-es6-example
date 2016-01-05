@@ -52,7 +52,7 @@ const LISTEN_TO = 'direct_message,direct_mention,mention';
 // botkit controller callbacks ---- these are from the example bot from botkit
 // feel free to remove those and just add your .hears() calls and custom logic in bot.es6
 
-controller.hears(['hello','hi'], LISTEN_TO, (bot, message) => {
+controller.hears(['^hello','^hi'], LISTEN_TO, (bot, message) => {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -75,7 +75,7 @@ controller.hears(['hello','hi'], LISTEN_TO, (bot, message) => {
 }); // hello, hi
 
 
-controller.hears(['call me (.*)'], LISTEN_TO, (bot, message) => {
+controller.hears(['^call me (.*)'], LISTEN_TO, (bot, message) => {
     let matches = message.text.match(/call me (.*)/i);
     let name = matches[1];
     
@@ -117,7 +117,7 @@ controller.hears(['what is my name','who am i'], LISTEN_TO, (bot, message) => {
 }); // what is my name, who am i
 
 
-controller.hears(['shutdown'], LISTEN_TO, (bot, message) => {
+controller.hears(['^shutdown'], LISTEN_TO, (bot, message) => {
 
     bot.startConversation(message, (err, conversation) => {
         conversation.ask("Are you sure you want me to shutdown?", [
@@ -147,7 +147,7 @@ controller.hears(['shutdown'], LISTEN_TO, (bot, message) => {
 }); // shutdown
 
 
-controller.hears(['uptime','identify yourself','who are you','what is your name'], LISTEN_TO,(bot, message) => {
+controller.hears(['^uptime','identify yourself','who are you','what is your name'], LISTEN_TO,(bot, message) => {
 
   let hostname = os.hostname();
   let uptime = formatUptime(process.uptime());

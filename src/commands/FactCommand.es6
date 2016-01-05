@@ -2,7 +2,7 @@
 // FactCommand
 //
 
-import BaseCommand                  from './BaseCommand.es6';
+import { BaseCommand }              from './BaseCommand.es6';
 import { removeCommandFromMessage } from '../utils.es6';
 import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
@@ -18,7 +18,7 @@ const CMDS_TELL_FACT   = ["tell fact", "random fact", "list fact"];
 
 let dbGetFacts = () => {
     let p = new Promise((resolve, reject) => {
-        console.log("getFacts");
+        console.log("dbGetFacts");
         db.all("SELECT * FROM fact ORDER BY id", [], (err, rows) => {
             if (err) {
                 console.error("DB SELECT error!", err);
@@ -32,7 +32,7 @@ let dbGetFacts = () => {
 };
 
 let dbAddFact = (fact) => {
-    console.log("addFact");
+    console.log("dbAddFact");
     let p = new Promise((resolve, reject) => {
         // NOTE(dkg): have to use ES5 syntax for callback, because ES6 fat arrow functions
         //            have their own way with 'this', which doesn't work with the sqlite
@@ -51,7 +51,7 @@ let dbAddFact = (fact) => {
 };
 
 let dbUpdateFact = (id, fact) => {
-    console.log("updateFact");
+    console.log("dbUpdateFact");
     let p = new Promise((resolve, reject) => {
         db.run("UPDATE fact SET fact = $fact WHERE id = $id", {
             $id: id,
@@ -68,8 +68,6 @@ let dbUpdateFact = (id, fact) => {
     return p;
 };
 
-
-console.log("in fact");
 
 class FactCommand extends BaseCommand {
 
@@ -94,7 +92,6 @@ class FactCommand extends BaseCommand {
 
         dbGetFacts()
             .then((facts) => {
-                console.log("facts?", facts);
                 if (!facts || facts.length === 0) {
                     bot.reply(message, "I don't know anything right now.");
                 } else {
@@ -112,6 +109,7 @@ class FactCommand extends BaseCommand {
                 bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
             });
     }
+
     onGetRandomFact(bot, message) {
         console.log("onGetRandomFact");
 
@@ -132,6 +130,7 @@ class FactCommand extends BaseCommand {
                 bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
             });
     }
+
     onAddFact(bot, message) {
         console.log("onAddFact");
 
@@ -147,6 +146,7 @@ class FactCommand extends BaseCommand {
                 bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
             });
     }
+
     onUpdateFact(bot, message) {
         console.log("onUpdateFact");
         // 
@@ -154,8 +154,6 @@ class FactCommand extends BaseCommand {
         let tmp = msg.split(" ");
         let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);
 
-        console.log("tmp, factId", tmp, factId);
-        
         if (!isNaN(factId) && factId > 0) {
             let fact = msg.substr(tmp[0].length).trim();
             dbUpdateFact(factId, fact)

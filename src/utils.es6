@@ -48,9 +48,14 @@ let removeCommandFromMessage = (msg, commands) => {
         text = text.substr(0, text.length - 1).trim();
     }
 
-    return text;
+    return text.trim();
 };
 
 
-export { formatUptime, removeCommandFromMessage };
+let randomIntFromInterval = (min,max) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+};
+
+
+export { formatUptime, removeCommandFromMessage, randomIntFromInterval };
 

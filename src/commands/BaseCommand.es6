@@ -11,13 +11,10 @@ const LISTEN_TO_AMBIENT = "ambient";
 const LISTEN_TO_ALL_BUT_AMBIENT = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 
-console.log("base cmd");
-
 
 class BaseCommand {
 
-    constructor(/*name, controller, slackInfo*/) {
-        console.log("BaseCommand");
+    constructor(name, controller, slackInfo) {
         this.name = name;
         this.controller = controller;
         this.slackInfo = slackInfo;
@@ -30,6 +27,5 @@ class BaseCommand {
     }
 }
 
-console.log("base cmd");
 
 export { BaseCommand };

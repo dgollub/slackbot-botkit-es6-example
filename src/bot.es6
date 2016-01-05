@@ -5,15 +5,18 @@
 import { _ } from 'lodash';
 import { db } from './db.es6';
 import { FactCommand } from './commands/FactCommand.es6';
+import { RandomNumberCommand } from './commands/RandomNumberCommand.es6';
 
 
 const LISTEN_TO_DIRECT_MESSAGE = "direct_message";
 const LISTEN_TO_DIRECT_MENTION = "direct_mention";
 const LISTEN_TO_MENTION = "mention";
 const LISTEN_TO_AMBIENT = "ambient";
+const LISTEN_TO_MESSAGES = "message_received";
 
+const LISTEN_TO_OTHERS = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_MENTION].join(',');
 const LISTEN_TO_ALL_BUT_AMBIENT = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
-const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
+const LISTEN_TO_ALL = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 
 
 const CMDS_TELL_GIT = ["tell git", "branch", "commit", "show git", "show version", "version"];
@@ -41,6 +44,7 @@ class Bot {
 
         this.commands = [];
         this.commands.push(new FactCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
+        this.commands.push(new RandomNumberCommand(controller, slackInfo, LISTEN_TO_ALL));
 
         this.listenTo(CMDS_TELL_GIT, LISTEN_TO_ALL_BUT_AMBIENT, this.onShowGitInformation);
     }
