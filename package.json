@@ -5,9 +5,14 @@
   "author": "Daniel Kurashige-Gollub <daniel@kurashige-gollub.de>",
   "license": "MIT",
   "scripts": {
+    "build": "npm run clean && npm run create:build-folders && npm run compile:es6",
+    "clean": "rm -rf build",
+    "compile:es6": "babel src server.js -d build --source-maps inline",
+    "create:build-folders": "mkdir -p build",
+    "lint": "eslint --max-warnings 9999 ./src/**",
     "start": "node server.js",
-    "watch:lint": "watch 'npm run lint' ./src",
-    "lint": "eslint --max-warnings 9999 ./src/**"
+    "watch:es6": "babel src server.js --watch -d build --source-maps inline",
+    "watch:lint": "watch 'npm run lint' ./src"
   },
   "main": "./server.js",
   "repository": {
@@ -32,6 +37,7 @@
     "eslint": "^1.*"
   },
   "devDependencies": {
+    "babel-cli": "^6.*",
     "babel-core": "^6.*",
     "babel-polyfill": "^6.*",
     "babel-preset-es2015": "^6.*",

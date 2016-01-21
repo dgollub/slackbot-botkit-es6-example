@@ -1,5 +1,7 @@
 
 data/
+tmp/
+build/
 
 # Created by https://www.gitignore.io/api/linux,osx,windows,sublimetext,sass,node,vim,vagrant
 

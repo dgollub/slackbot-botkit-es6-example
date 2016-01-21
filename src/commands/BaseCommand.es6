@@ -28,4 +28,4 @@ class BaseCommand {
 }
 
 
-export { BaseCommand };
+export { BaseCommand as default };

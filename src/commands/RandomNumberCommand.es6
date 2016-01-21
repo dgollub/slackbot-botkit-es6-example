@@ -41,4 +41,4 @@ class RandomNumberCommand extends BaseCommand {
 
 }
 
-export { RandomNumberCommand };
+export { RandomNumberCommand as default };

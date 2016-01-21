@@ -176,4 +176,4 @@ class FactCommand extends BaseCommand {
 
 }
 
-export { FactCommand };
+export { FactCommand as default };
