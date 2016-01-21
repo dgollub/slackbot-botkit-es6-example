@@ -2,10 +2,11 @@
 // Our core logic for our bot is here.
 // 
 
-import { _ } from 'lodash';
-import { db } from './db.es6';
-import { FactCommand } from './commands/FactCommand.es6';
-import { RandomNumberCommand } from './commands/RandomNumberCommand.es6';
+import { _ }                from 'lodash';
+import { db }               from './db.es6';
+import AdminCommand         from './commands/AdminCommand.es6';
+import FactCommand          from './commands/FactCommand.es6';
+import RandomNumberCommand  from './commands/RandomNumberCommand.es6';
 
 
 const LISTEN_TO_DIRECT_MESSAGE = "direct_message";
@@ -43,6 +44,7 @@ class Bot {
         this.controller.on('user_change', this.onUserChange);
 
         this.commands = [];
+        this.commands.push(new AdminCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
         this.commands.push(new FactCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
         this.commands.push(new RandomNumberCommand(controller, slackInfo, LISTEN_TO_ALL));
 

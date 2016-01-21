@@ -25,6 +25,7 @@ class BaseCommand {
         let ms = Array.isArray(messages) ? messages : [messages];
         this.controller.hears(ms, whatToListenTo, callback);
     }
+
 }
 
 

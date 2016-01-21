@@ -4,15 +4,16 @@
 
 "use strict";
 
+import config                           from './configuration.es6';
+import Bot                              from './bot.es6';
 import { db, initializeDatabaseTables } from './db.es6';
-import { Bot } from './bot.es6';
-import { formatUptime } from './utils.es6';
+import { formatUptime }                 from './utils.es6';
 
 
 let Botkit = require('Botkit');
 let os = require('os');
 
-let slackbotapitoken = process.env.slackbotapitoken || null;
+// let's get the party started
 
 let controller = Botkit.slackbot({
     debug: false
@@ -43,7 +44,7 @@ let startupCallback = (err, bot, payload) => {
 // serving and replying to messages while this process is running.
 
 controller.spawn({
-    token: slackbotapitoken
+    token: config.slackbotapitoken
 }).startRTM(startupCallback);
 
 
@@ -172,4 +173,4 @@ controller.on('channel_joined', (bot, message) => {
 
 
 // NOTE(dkg): this is technically not really needed. Maybe remove it?
-export { controller };
+export { controller as default };

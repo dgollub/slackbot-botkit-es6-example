@@ -28,9 +28,7 @@ let formatUptime = (uptime) => {
 let removeCommandFromMessage = (msg, commands) => {
     let text = (msg.text || "").trim();
 
-    if (!Array.isArray(commands)) {
-        commands = [commands];
-    }
+    commands = [].concat(commands);
 
     for (let cmd of commands) {
         let pos = text.toLowerCase().indexOf(cmd.toLowerCase());

@@ -2,7 +2,7 @@
 // RandomNumberCommand
 //
 
-import { BaseCommand }              from './BaseCommand.es6';
+import BaseCommand                  from './BaseCommand.es6';
 import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';

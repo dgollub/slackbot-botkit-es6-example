@@ -32,6 +32,7 @@ let initDbTables = () => {
     // If you want more fine-grained control you could introduce user groups, permissions, etc.
     db.run("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, userid VARCHAR(255), name VARCHAR(255), email VARCHAR(255))");
     db.run("CREATE TABLE IF NOT EXISTS fact (id INTEGER PRIMARY KEY AUTOINCREMENT, fact TEXT)");
+    db.run("CREATE TABLE IF NOT EXISTS admin (id INTEGER PRIMARY KEY AUTOINCREMENT, userid VARCHAR(255))");
 };
 
 let initializeDatabaseTables = () => {

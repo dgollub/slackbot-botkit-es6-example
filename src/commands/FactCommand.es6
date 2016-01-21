@@ -2,7 +2,7 @@
 // FactCommand
 //
 
-import { BaseCommand }              from './BaseCommand.es6';
+import BaseCommand                  from './BaseCommand.es6';
 import { removeCommandFromMessage } from '../utils.es6';
 import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
