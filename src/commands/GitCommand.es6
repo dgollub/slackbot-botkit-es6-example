@@ -39,6 +39,8 @@ let getGitCommitInfo = async () => {
     // let id = commit.id();
 
     let msg = `
+        git commit information
+        ----------------------
         SHA: ${sha}
         Author: ${author}
         Date: ${date.toString()}
