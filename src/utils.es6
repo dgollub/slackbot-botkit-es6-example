@@ -31,6 +31,23 @@ let removeCommandFromMessage = (msg, commands) => {
     commands = [].concat(commands);
 
     for (let cmd of commands) {
+        // TODO(dkg): cmd can be a regular expression, which needs to be removed
+        
+        // cheating here: if the regex has a "stop condition" ignore it
+        if (cmd.substr(-1) === "$") {
+            cmd = cmd.substr(0, cmd.length - 1);
+        }
+
+        let matches = text.match(cmd);
+        if (matches) {
+            for (let m of matches) {
+                let idx = text.indexOf(m);
+                text = text.substr(idx + m.length).trim();
+            }
+            continue;
+        }
+
+        // NOTE(dkg): this is the simple text comparsion fallback case
         let pos = text.toLowerCase().indexOf(cmd.toLowerCase());
         // TODO(dkg): maybe make sure to only remove the command if it is at
         //            the beginning of the text and not part of it?        

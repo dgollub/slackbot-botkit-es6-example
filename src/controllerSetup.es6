@@ -48,6 +48,7 @@ controller.spawn({
 }).startRTM(startupCallback);
 
 
+// TODO(dkg): put these .hears() into their own Commands
 const LISTEN_TO = 'direct_message,direct_mention,mention';
 
 // botkit controller callbacks ---- these are from the example bot from botkit

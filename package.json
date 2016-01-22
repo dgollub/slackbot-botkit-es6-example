@@ -11,6 +11,7 @@
     "create:build-folders": "mkdir -p build",
     "lint": "eslint --max-warnings 9999 ./src/**",
     "start": "node server.js",
+    "tests": "mocha --compilers es6:babel-core/register src/tests.es6",
     "watch:es6": "babel src server.js --watch -d build --source-maps inline",
     "watch:lint": "watch 'npm run lint' ./src"
   },
@@ -44,6 +45,7 @@
     "babel-preset-stage-0": "^6.*",
     "bluebird": "^3.*",
     "lodash": "^3.*",
+    "mocha": "^2.3.4",
     "nodegit": "^0.*",
     "sqlite3": "^3.*",
     "thread-sleep": "^1.0.4",

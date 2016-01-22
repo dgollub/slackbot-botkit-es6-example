@@ -62,7 +62,7 @@ let dbAddAdmin = (userId) => {
 let dbDeleteAdmin = (userId) => {
     console.log("dbDeleteAdmin", userId);
     let p = new Promise((resolve, reject) => {
-        db.run(`DELETE FROM ${DB_TABLE} WHERE user_id = $userid`, {
+        db.run(`DELETE FROM ${DB_TABLE} WHERE user_id = "$userid"`, {
             $userid: userId
         }, function(err) {
             if (err) {
@@ -137,28 +137,12 @@ class AdminCommand extends BaseCommand {
             }); // conversation.ask(pwd pls)
         }); // startPrivateConversation
 
-        
     }
 
     dbDeleteAdmin(bot, message) {
         console.log("dbDeleteAdmin");
 
-        dbGetAdmins()
-            .then((facts) => {
-                console.log("facts?", facts);
-                if (!facts || facts.length === 0) {
-                    bot.reply(message, "I don't know anything right now.");
-                } else {
-                    let factIdx = _.random(0, facts.length - 1);
-                    let fact = facts[factIdx];
-                    let factNum = `Random fact *#${fact.id}*: `;
-                    bot.reply(message, factNum + "```" + fact.fact + "```");
-                }
-            })
-            .catch((err) => {
-                console.log("error?", err);
-                bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-            });
+
     }
 
     onAddAdmin(bot, message) {
@@ -206,4 +190,8 @@ class AdminCommand extends BaseCommand {
 
 }
 
-export { AdminCommand as default };
+
+export { 
+    AdminCommand as default, 
+    dbGetAdmins as getAdminList 
+};
