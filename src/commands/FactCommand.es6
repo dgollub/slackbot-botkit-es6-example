@@ -3,16 +3,19 @@
 //
 
 import BaseCommand                  from './BaseCommand.es6';
-import { removeCommandFromMessage } from '../utils.es6';
 import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';
+import { getAdminList }             from './AdminCommand.es6';
+
+import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 
 
-const CMDS_ADD_FACT    = ["add fact", "insert fact"];
-const CMDS_UPDATE_FACT = ["revise fact", "update fact"];
-const CMDS_LIST_FACTS  = ["tell facts", "list facts"];
-const CMDS_TELL_FACT   = ["tell fact", "random fact", "list fact"];
+
+const CMDS_ADD_FACT    = ["^fact add", "^facts add"];
+const CMDS_UPDATE_FACT = ["^fact update"];
+const CMDS_LIST_FACTS  = ["^facts list$", "^facts$"];
+const CMDS_TELL_FACT   = ["^fact$", "^fact random", "^fact show", "^fact tell"];
 
 
 
@@ -81,11 +84,15 @@ class FactCommand extends BaseCommand {
         this.onUpdateFact = this.onUpdateFact.bind(this);
         this.onAddFact = this.onAddFact.bind(this);
 
+        this.isAdmin = this.isAdmin.bind(this);
+
         this.listenTo(CMDS_LIST_FACTS, listenToTypes, this.onGetFacts);
         this.listenTo(CMDS_TELL_FACT, listenToTypes, this.onGetRandomFact);
         this.listenTo(CMDS_ADD_FACT, listenToTypes, this.onAddFact);
         this.listenTo(CMDS_UPDATE_FACT, listenToTypes, this.onUpdateFact);
     }
+
+
 
     onGetFacts(bot, message) {
         console.log("onGetFacts");
@@ -131,8 +138,11 @@ class FactCommand extends BaseCommand {
             });
     }
 
-    onAddFact(bot, message) {
+    async onAddFact(bot, message) {
         console.log("onAddFact");
+
+        let isAdmin = await this.isAdmin(bot, message);
+        if (!isAdmin) return;
 
         // TODO(dkg): add security/auth stuff here.
         let fact = removeCommandFromMessage(message, CMDS_ADD_FACT);
@@ -147,9 +157,12 @@ class FactCommand extends BaseCommand {
             });
     }
 
-    onUpdateFact(bot, message) {
+    async onUpdateFact(bot, message) {
         console.log("onUpdateFact");
-        // 
+
+        let isAdmin = await this.isAdmin(bot, message);
+        if (!isAdmin) return;
+
         let msg = removeCommandFromMessage(message, CMDS_UPDATE_FACT);
         let tmp = msg.split(" ");
         let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);

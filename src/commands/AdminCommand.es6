@@ -9,17 +9,15 @@
 import config                       from '../configuration.es6';
 import BaseCommand                  from './BaseCommand.es6';
 
-import { removeCommandFromMessage } from '../utils.es6';
 import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';
 
+import { removeCommandFromMessage, getUserFromList, getUserName, privateMsgToUser } from '../utils.es6';
 
 const CMDS_ADMIN_ADD        = ["^admin add"];
-const CMDS_ADMIN_DELETE     = ["^admin delete"];
+const CMDS_ADMIN_DELETE     = ["^admin delete", "^admin remove", "^admin rm"];
 const CMDS_ADMIN_LIST       = ["^admin list", "^admin help", "^admin$"];
-
-console.log("config", config);
 
 const DB_TABLE = "admin";
 const SUPERUSER_PWD = config.superadminpassword;
@@ -33,6 +31,7 @@ let dbGetAdmins = () => {
                 console.error("DB SELECT error!", err);
                 reject(err);
             } else {
+                console.log("admins get from db success");
                 resolve(rows);
             }
         });
@@ -47,7 +46,7 @@ let dbAddAdmin = (userId) => {
         //            have their own way with 'this', which doesn't work with the sqlite
         //            nicely in this case.
         // see details here https://github.com/mapbox/node-sqlite3/issues/560
-        db.run("INSERT INTO ${DB_TABLE} (user_id) VALUES (?)", userId.trim(), function(err) {
+        db.run(`INSERT INTO ${DB_TABLE} (userid) VALUES (?)`, userId.trim(), function(err) {
             if (err) {
                 console.error("DB INSERT error!", err);
                 reject(err);
@@ -62,7 +61,7 @@ let dbAddAdmin = (userId) => {
 let dbDeleteAdmin = (userId) => {
     console.log("dbDeleteAdmin", userId);
     let p = new Promise((resolve, reject) => {
-        db.run(`DELETE FROM ${DB_TABLE} WHERE user_id = "$userid"`, {
+        db.run(`DELETE FROM ${DB_TABLE} WHERE userid = $userid`, {
             $userid: userId
         }, function(err) {
             if (err) {
@@ -82,7 +81,7 @@ class AdminCommand extends BaseCommand {
     constructor(controller, slackInfo, listenToTypes) {
         console.log("AdminCommand");
 
-        super("Facts", controller, slackInfo);
+        super("Admin", controller, slackInfo);
 
         this.onAddAdmin = this.onAddAdmin.bind(this);
         this.dbDeleteAdmin = this.dbDeleteAdmin.bind(this);
@@ -98,31 +97,38 @@ class AdminCommand extends BaseCommand {
         
         const slackInfo = this.slackInfo;
 
-        let fnGetAdminListAndReply = (conversation) => {
+        let fnGetAdminListAndReply = async (conversation) => {
 
-            dbGetAdmins()
-                .then((admins) => {
-                    let reply = [];
-                    if (!admins || admins.length === 0) {
-                        reply.push("No admins assigned yet.");
-                    } else {
-                        let users = slackInfo.users || [];
-                        console.log("users", users);
+            try {
+                let admins = await dbGetAdmins();
+                let reply = [];
 
-                        let msg = "```" + _.reduce(admins, (result, admin) => {
-                            let user = users.find((u) => u.id === admin.user_id);
-                            return `${result}\n${admin.name}`;
-                        }, "") + "```";
+                if (!admins || admins.length === 0) {
+                    reply.push("No admins assigned yet.");
+                } else {
+                    let users = slackInfo.users || [];
 
-                        reply.push(`Known admins:\n${msg}`);
-                    }
-                    conversation.say(reply.join(""));
-                    conversation.next();
-                })
-                .catch((err) => {
-                    console.log("error?", err);
-                    bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-                });
+                    let msg = "```" + _.reduce(admins, (result, admin) => {
+                        let user = users.find(u => u.id === admin.userid);
+                        return `${result}\n${user.name}`;
+                    }, "") + "```";
+
+                    reply.push(`Known admins:\n${msg}`);
+                }
+
+                let msg = reply.join("");
+
+                // reply publicly only
+                bot.reply(message, msg);
+                
+                // conversation.say(msg);
+                conversation.next();
+
+            } catch(err) {
+                console.log("error?", err);
+                conversation.say(`Sorry. An error happend.\nError: ${err.message}`);
+                conversation.next();
+            }
         }; 
 
         bot.startPrivateConversation(message, (err, conversation) => {
@@ -142,56 +148,119 @@ class AdminCommand extends BaseCommand {
     dbDeleteAdmin(bot, message) {
         console.log("dbDeleteAdmin");
 
+        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_ADMIN_DELETE));
+        let user = getUserFromList(this.slackInfo.users || [], possibleUserName)
 
+        if (!user) {
+            bot.reply(message, `Sorry, could not find a user with the name ${possibleUserName}.`);
+            return;
+        }
+
+        let fnDeleteAdminUserAndReply = async (user, conversation) => {
+
+            try {
+                let admins = await dbGetAdmins();
+                let found = admins.find(a => a.userid === user.id);
+
+                if (!found) {
+                    conversation.say(`The user ${user.name} is not an admin.`);
+                    conversation.next();
+                    return;
+                }
+            } catch(err) {
+                console.error(`Could not get the list of admins. :-( Reason: ${err.message}`);
+                conversation.say(`The admin list could not be accessed. :-( Reason: ${err.message}`);
+                conversation.next();
+                return;
+            }
+
+            dbDeleteAdmin(user.id)
+                .then((stmt) => {
+                    privateMsgToUser(bot, user.id, "Your admin powers have been taken away from you.\nYou are not worthy.");
+                    conversation.say(`Deleted the user ${user.name} from my admin database.`);
+                    conversation.next();
+                })
+                .catch((err) => {
+                    console.log("error?", err);
+                    conversation.say(`Sorry. An error happend.\nError: ${err}`);
+                    conversation.next();
+                });
+        }
+
+        bot.startPrivateConversation(message, (err, conversation) => {
+            conversation.ask("Password, please.", (message, conversation) => {
+                let pwd = removeCommandFromMessage(message, CMDS_ADMIN_LIST);
+                if (pwd === SUPERUSER_PWD) {
+                    fnDeleteAdminUserAndReply(user, conversation);
+                } else {
+                    conversation.say("Access denied!");
+                    conversation.next();
+                }
+            }); // conversation.ask(pwd pls)
+        }); // startPrivateConversation
     }
 
     onAddAdmin(bot, message) {
         console.log("onAddAdmin");
 
-        // TODO(dkg): add security/auth stuff here.
-        let fact = removeCommandFromMessage(message, CMDS_ADMIN_ADD);
-        
-        dbAddAdmin(fact)
-            .then((stmt) => {
-                bot.reply(message, "Added the fact to my knowledge base. ID#" + stmt.lastID);
-            })
-            .catch((err) => {
-                console.log("error?", err);
-                bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
-            });
-    }
+        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_ADMIN_ADD));
+        let user = getUserFromList(this.slackInfo.users || [], possibleUserName)
 
-    onChangePassword(bot, message) {
-        console.log("onChangePassword");
-        // 
-        let msg = removeCommandFromMessage(message, CMDS_ADMIN_CHANGE_PWD);
-        let tmp = msg.split(" ");
-        let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);
+        if (!user) {
+            bot.reply(message, `Sorry, could not find a user with the name ${possibleUserName}.`);
+            return;
+        }
 
-        if (!isNaN(factId) && factId > 0) {
-            let fact = msg.substr(tmp[0].length).trim();
-            dbUpdateFact(factId, fact)
+        let fnAddAdminUserAndReply = async (user, conversation) => {
+
+            try {
+                let admins = await dbGetAdmins();
+                let found = admins.find(a => a.userid === user.id);
+
+                if (found) {
+                    conversation.say(`The user ${user.name} is already an admin.`);
+                    conversation.next();
+                    return;
+                }
+            } catch(err) {
+                console.error(`Could not get the list of admins. :-( Reason: ${err.message}`);
+                conversation.say(`The admin list could not be accessed. :-( Reason: ${err.message}`);
+                conversation.next();
+                return;
+            }
+
+            dbAddAdmin(user.id)
                 .then((stmt) => {
-                    console.log("statement", stmt);
-                    if (stmt.changes === 0) {
-                        bot.reply(message, "The specified fact wasn't found.");
-                    } else {
-                        bot.reply(message, "Updated the fact.");
-                    }
+                    privateMsgToUser(bot, user.id, "You were added to my admin database as admin.");
+                    conversation.say(`Added the user ${user.name} as admin to my database. ID#${stmt.lastID}`);
+                    conversation.next();
                 })
                 .catch((err) => {
                     console.log("error?", err);
-                    bot.reply(message, `Sorry. An error happend.\nError: ${err}`);
+                    conversation.say(`Sorry. An error happend.\nError: ${err}`);
+                    conversation.next();
                 });
-        } else {
-            bot.reply(message, 'You will need to provide a Fact#ID as first argument.');
         }
+
+        bot.startPrivateConversation(message, (err, conversation) => {
+            conversation.ask("Password, please.", (message, conversation) => {
+                let pwd = removeCommandFromMessage(message, CMDS_ADMIN_LIST);
+                if (pwd === SUPERUSER_PWD) {
+                    fnAddAdminUserAndReply(user, conversation);
+                } else {
+                    conversation.say("Access denied!");
+                    conversation.next();
+                }
+            }); // conversation.ask(pwd pls)
+        }); // startPrivateConversation
+        
     }
 
 }
 
 
+
 export { 
     AdminCommand as default, 
-    dbGetAdmins as getAdminList 
+    dbGetAdmins as getAdminList
 };

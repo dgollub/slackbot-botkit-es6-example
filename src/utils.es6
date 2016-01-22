@@ -27,7 +27,6 @@ let formatUptime = (uptime) => {
 
 let removeCommandFromMessage = (msg, commands) => {
     let text = (msg.text || "").trim();
-
     commands = [].concat(commands);
 
     for (let cmd of commands) {
@@ -72,5 +71,46 @@ let randomIntFromInterval = (min,max) => {
 };
 
 
-export { formatUptime, removeCommandFromMessage, randomIntFromInterval };
+let getUserName = (possibleUserName) => {
+    // other users can be referenced either by their name or by their @name
+    // examples
+    // a) admin add chris ==> userNmae == chris
+    // b) admin add @chris ==> userName == <@U03NQBCBA>
+    return possibleUserName.replace("<@", "").replace(">", "");
+};
+
+
+// list: array of https://api.slack.com/types/user
+let getUserFromList = (list, possibleUserNameOrId) => {
+    let userName = getUserName(possibleUserNameOrId);
+    let user = list.find(u => u.name === userName || u.id == userName);
+
+    return user;
+};
+
+
+let privateMsgToUser = (bot, userId, message) => {
+    // console.log("privateMsgToUser", userId, message);
+    
+    let privateMsg = {
+        text: message,
+        channel: "",
+        user: userId
+    };
+
+    bot.startPrivateConversation(privateMsg, (err, conversation) => { 
+        conversation.say(message);
+        conversation.next();
+    });
+};
+
+
+export { 
+    formatUptime,
+    removeCommandFromMessage,
+    randomIntFromInterval,
+    getUserName,
+    getUserFromList,
+    privateMsgToUser
+};
 
