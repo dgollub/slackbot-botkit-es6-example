@@ -21,7 +21,7 @@ const LISTEN_TO_ALL = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_M
 
 
 const CMDS_TELL_GIT = ["tell git", "branch", "commit", "show git", "show version", "version"];
-const CMDS_HELP = ["^help$", "~?"];
+const CMDS_HELP = ["^help$", "^\\?"];
 
 class Bot {
 

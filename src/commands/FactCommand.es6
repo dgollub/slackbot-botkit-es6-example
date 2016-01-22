@@ -94,7 +94,8 @@ class FactCommand extends BaseCommand {
     helpText() {
         let msg = [];
 
-        msg.push(`*${this.name}* allows you to display and add/edit/remove random facts. You'll need to be admin to add/edit/remove facts.`);
+        msg.push(`*${this.name}* allows you to display and add/edit/remove random facts.`);
+        msg.push("`* requires admin powers`");
         msg.push("```");
 
         let fnAddHelp = (orgCmds, shortDescription, parameters="", example="") => {
@@ -105,8 +106,8 @@ class FactCommand extends BaseCommand {
             return exampleCmd.length > 0 ? `${msg}\n\tExample: ${exampleCmd}` : msg;
         };
 
-        msg.push(fnAddHelp(CMDS_ADD_FACT, "Add a fact.", "<fact>", "'Adventures of Power' is a funny movie."));
-        msg.push(fnAddHelp(CMDS_UPDATE_FACT, "Update an existing fact.", "<factId> <updated fact text>", "1 'Kingsman' is an amazing movie! Watch it!"));
+        msg.push(fnAddHelp(CMDS_ADD_FACT, "* Add a fact.", "<fact>", "'Adventures of Power' is a funny movie."));
+        msg.push(fnAddHelp(CMDS_UPDATE_FACT, "* Update an existing fact.", "<factId> <updated fact text>", "1 'Kingsman' is an amazing movie! Watch it!"));
         msg.push(fnAddHelp(CMDS_LIST_FACTS, "List all existing facts."));
         msg.push(fnAddHelp(CMDS_TELL_FACT, "List a random fact from the list."));
 
