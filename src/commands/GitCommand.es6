@@ -10,10 +10,12 @@ import { getAdminList }             from './AdminCommand.es6';
 
 import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 
-let git  = require("nodegit");
+let git  = require("nodegit");  // http://www.nodegit.org/
 let path = require('path');
 let fs   = require('fs');
 
+// TODO(dkg): implement commands that allow us to update the bot from the git repository
+//            and automatically restart it
 const CMDS_INFO = ["^git info", "^git$"];
 
 
@@ -22,17 +24,18 @@ let getGitCommitInfo = async () => {
 
     console.log("Repository Path", repositoryPath);
 
-    let getMostRecentCommit = (repository) => {
-        return repository.getBranchCommit("master");
-    };
-    let getCommitMessage = (commit) => {
-        console.log("commit", commit);
-        return commit.message();
-    };
+    // let getMostRecentCommit = (repository) => {
+    //     return repository.getBranchCommit("master");
+    // };
+    // let getCommitMessage = (commit) => {
+    //     console.log("commit", commit);
+    //     return commit.message();
+    // };
 
     let repo = await git.Repository.open(repositoryPath);
-    let commit = await getMostRecentCommit(repo);
-    let message = getCommitMessage(commit);
+    let branch = await repo.getCurrentBranch();
+    let commit = await repo.getBranchCommit(branch);
+    let message = commit.message();
     let author = commit.author();
     let date = commit.date();
     let sha = commit.sha();
@@ -42,6 +45,7 @@ let getGitCommitInfo = async () => {
         git commit information
         ----------------------
         SHA: ${sha}
+        Branch: ${branch.shorthand()}
         Author: ${author}
         Date: ${date.toString()}
         Message:
