@@ -55,6 +55,11 @@ class BaseCommand {
         }
     }
 
+    // returns the usage/help text for this command/these commands
+    helpText() {
+        throw "Please implement this function in your subclass!";
+    }
+
 }
 
 

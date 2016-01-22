@@ -9,8 +9,9 @@ import { Promise }                  from 'bluebird';
 import { removeCommandFromMessage, randomIntFromInterval } from '../utils.es6';
 
 
-const CMDS_RANDOM_NUMBER = ["random num", "\s*rnd", "random dice", "random die"];
-
+const CMDS_RANDOM_NUMBER = ["^random num", "^rnd", "^random dice", "^random die"];
+const INT_MIN = 0;
+const INT_MAX = 100;
 
 class RandomNumberCommand extends BaseCommand {
 
@@ -33,10 +34,31 @@ class RandomNumberCommand extends BaseCommand {
             console.log("randomNumberRange", randomNumberRange);
         }
 
-        let num = randomIntFromInterval(0, 100);
+        let num = randomIntFromInterval(INT_MIN, INT_MAX);
         let msg = `Random ${num} for you!`;
 
         bot.reply(message, msg);
+    }
+
+    helpText() {
+        let msg = [];
+
+        msg.push(`*${this.name}* will display a random number between ${INT_MIN} and ${INT_MAX}.`);
+        msg.push("```");
+
+        let fnAddHelp = (orgCmds, shortDescription, parameters="", example="") => {
+            let cmds = orgCmds.map(c => c.replace(/[^\w\s]/gi, ''));
+            let exampleCmd =  example.length > 0 ? `${cmds[0]} ${example}` : "";
+            let msg = `${cmds.join("|")} ${parameters}\n\tBrief: ${shortDescription}`;
+
+            return exampleCmd.length > 0 ? `${msg}\n\tExample: ${exampleCmd}` : msg;
+        };
+
+        msg.push(fnAddHelp(CMDS_RANDOM_NUMBER, `Display a random number between ${INT_MIN} and ${INT_MAX}.`));
+
+        msg.push("```");
+        
+        return msg.join("\n");
     }
 
 }

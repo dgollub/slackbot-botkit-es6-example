@@ -21,7 +21,7 @@ const LISTEN_TO_ALL = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_M
 
 
 const CMDS_TELL_GIT = ["tell git", "branch", "commit", "show git", "show version", "version"];
-
+const CMDS_HELP = ["^help$", "~?"];
 
 class Bot {
 
@@ -35,6 +35,7 @@ class Bot {
         this.updateCacheUserInfo  = this.updateCacheUserInfo.bind(this);
 
         this.onShowGitInformation = this.onShowGitInformation.bind(this);
+        this.onHelp = this.onHelp.bind(this);
 
         this.listenTo = this.listenTo.bind(this);
 
@@ -48,7 +49,10 @@ class Bot {
         this.commands.push(new FactCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
         this.commands.push(new RandomNumberCommand(controller, slackInfo, LISTEN_TO_ALL));
 
+        // TODO(dkg): implement this git command as GitCommand
         this.listenTo(CMDS_TELL_GIT, LISTEN_TO_ALL_BUT_AMBIENT, this.onShowGitInformation);
+
+        this.listenTo(CMDS_HELP, LISTEN_TO_ALL, this.onHelp);
     }
 
     listenTo(messages, whatToListenTo, callback) {
@@ -59,7 +63,25 @@ class Bot {
 
     onShowGitInformation(bot, message) {
         console.log("onShowGitInformation");        
-    }        
+    }
+
+    onHelp(bot, message) {
+        console.log("onHelp");
+
+        let reply = ["Available commands are:\n"];
+
+        for (let cmd of this.commands) {
+            let msg = "";
+            try {
+                msg = cmd.helpText();
+            } catch(err) {
+                msg = `Command '${cmd.name}' has no help available. :-(`;
+            }
+            reply.push(msg);
+        }
+
+        bot.reply(message, reply.join("\n\n"));
+    }
     
     onTeamJoin(bot, message) {
         this.updateCacheUserInfo(message.user);

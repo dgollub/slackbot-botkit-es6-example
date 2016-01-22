@@ -18,7 +18,6 @@ const CMDS_LIST_FACTS  = ["^facts list$", "^facts$"];
 const CMDS_TELL_FACT   = ["^fact$", "^fact random", "^fact show", "^fact tell"];
 
 
-
 let dbGetFacts = () => {
     let p = new Promise((resolve, reject) => {
         console.log("dbGetFacts");
@@ -92,7 +91,29 @@ class FactCommand extends BaseCommand {
         this.listenTo(CMDS_UPDATE_FACT, listenToTypes, this.onUpdateFact);
     }
 
+    helpText() {
+        let msg = [];
 
+        msg.push(`*${this.name}* allows you to display and add/edit/remove random facts. You'll need to be admin to add/edit/remove facts.`);
+        msg.push("```");
+
+        let fnAddHelp = (orgCmds, shortDescription, parameters="", example="") => {
+            let cmds = orgCmds.map(c => c.replace(/[^\w\s]/gi, ''));
+            let exampleCmd =  example.length > 0 ? `${cmds[0]} ${example}` : "";
+            let msg = `${cmds.join("|")} ${parameters}\n\tBrief: ${shortDescription}`;
+
+            return exampleCmd.length > 0 ? `${msg}\n\tExample: ${exampleCmd}` : msg;
+        };
+
+        msg.push(fnAddHelp(CMDS_ADD_FACT, "Add a fact.", "<fact>", "'Adventures of Power' is a funny movie."));
+        msg.push(fnAddHelp(CMDS_UPDATE_FACT, "Update an existing fact.", "<factId> <updated fact text>", "1 'Kingsman' is an amazing movie! Watch it!"));
+        msg.push(fnAddHelp(CMDS_LIST_FACTS, "List all existing facts."));
+        msg.push(fnAddHelp(CMDS_TELL_FACT, "List a random fact from the list."));
+
+        msg.push("```");
+        
+        return msg.join("\n");
+    }
 
     onGetFacts(bot, message) {
         console.log("onGetFacts");

@@ -24,7 +24,6 @@ let formatUptime = (uptime) => {
     return uptime;
 };
 
-
 let removeCommandFromMessage = (msg, commands) => {
     let text = (msg.text || "").trim();
     commands = [].concat(commands);
