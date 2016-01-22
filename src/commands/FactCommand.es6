@@ -11,7 +11,10 @@ import { getAdminList }             from './AdminCommand.es6';
 import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 
 
-
+// TODO(dkg): maybe these should not be simple constants in arrays, but rather
+//            be their own classes/instances - one for each type of command,
+//            and then the helpText implemenation could be a lot cleanrer,
+//            also a bunch of other things could be cleaner and more straight forward
 const CMDS_ADD_FACT    = ["^fact add", "^facts add"];
 const CMDS_UPDATE_FACT = ["^fact update"];
 const CMDS_LIST_FACTS  = ["^facts list$", "^facts$"];

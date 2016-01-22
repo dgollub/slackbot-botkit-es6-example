@@ -48,7 +48,7 @@
     "bluebird": "^3.*",
     "lodash": "^3.*",
     "mocha": "^2.*",
-    "nodegit": "^0.*",
+    "nodegit": "^0.9.0",
     "sqlite3": "^3.*",
     "thread-sleep": "^1.0.4",
     "watch": "^0.*"
