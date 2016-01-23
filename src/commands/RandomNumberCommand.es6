@@ -9,16 +9,19 @@ import { Promise }                  from 'bluebird';
 import { removeCommandFromMessage, randomIntFromInterval } from '../utils.es6';
 
 
-const CMDS_RANDOM_NUMBER = ["^random num", "^rnd", "^random dice", "^random die"];
+const COMMAND = "rndnum";
+
+const CMDS_RANDOM_NUMBER = [`^${COMMAND}$`, `^${COMMAND}`];
+
 const INT_MIN = 0;
 const INT_MAX = 100;
 
 class RandomNumberCommand extends BaseCommand {
 
-    constructor(controller, slackInfo, listenToTypes) {
+    constructor(manager, listenToTypes) {
         console.log("RandomNumberCommand");
 
-        super("Random Number", controller, slackInfo);
+        super(COMMAND, manager);
 
         this.onGetRandomNumber = this.onGetRandomNumber.bind(this);
 
@@ -35,7 +38,7 @@ class RandomNumberCommand extends BaseCommand {
         }
 
         let num = randomIntFromInterval(INT_MIN, INT_MAX);
-        let msg = `Random ${num} for you!`;
+        let msg = `${num}`;
 
         bot.reply(message, msg);
     }
@@ -43,7 +46,7 @@ class RandomNumberCommand extends BaseCommand {
     helpText() {
         let msg = [];
 
-        msg.push(`*${this.name}* will display a random number between ${INT_MIN} and ${INT_MAX}.`);
+        msg.push(this.helpShortDescription());
         msg.push("```");
 
         let fnAddHelp = (orgCmds, shortDescription, parameters="", example="") => {
@@ -59,6 +62,10 @@ class RandomNumberCommand extends BaseCommand {
         msg.push("```");
         
         return msg.join("\n");
+    }
+
+    helpShortDescription() {
+        return `*${this.name}* will display a random number between ${INT_MIN} and ${INT_MAX}.`;
     }
 
 }

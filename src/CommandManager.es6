@@ -1,5 +1,7 @@
 //
+// CommandManager
 // Our core logic for our bot is here.
+// Manage all our available commands.
 // 
 
 import { _ }                from 'lodash';
@@ -8,6 +10,7 @@ import AdminCommand         from './commands/AdminCommand.es6';
 import FactCommand          from './commands/FactCommand.es6';
 import GitCommand           from './commands/GitCommand.es6';
 import RandomNumberCommand  from './commands/RandomNumberCommand.es6';
+import HelpCommand          from './commands/HelpCommand.es6';
 
 
 const LISTEN_TO_DIRECT_MESSAGE = "direct_message";
@@ -21,12 +24,8 @@ const LISTEN_TO_ALL_BUT_AMBIENT = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_ME
 const LISTEN_TO_BOTNAME = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION].join(',');
 const LISTEN_TO_ALL = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 
-// TODO(dkg): implement help for specific commands. The general `help` should only show available
-//            commands, but not the details
-const CMDS_HELP = ["^help$", "^\\?"];
 
-
-class Bot {
+class CommandManager {
 
     constructor(controller, slackInfo) {
         this.controller = controller;
@@ -37,59 +36,27 @@ class Bot {
         this.onTeamJoin = this.onTeamJoin.bind(this);
         this.updateCacheUserInfo  = this.updateCacheUserInfo.bind(this);
 
-        this.onShowGitInformation = this.onShowGitInformation.bind(this);
-        this.onHelp = this.onHelp.bind(this);
-
-        this.listenTo = this.listenTo.bind(this);
-
         // listen to team_join and user_change events to make sure you update your cached user list
 
         this.controller.on('team_join', this.onTeamJoin);
         this.controller.on('user_change', this.onUserChange);
 
         this.commands = [];
-        this.commands.push(new AdminCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
-        this.commands.push(new FactCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
-        this.commands.push(new GitCommand(controller, slackInfo, LISTEN_TO_BOTNAME));
-        this.commands.push(new RandomNumberCommand(controller, slackInfo, LISTEN_TO_ALL_BUT_AMBIENT));
-
-        this.listenTo(CMDS_HELP, LISTEN_TO_ALL, this.onHelp);
+        this.commands.push(new AdminCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
+        this.commands.push(new FactCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
+        this.commands.push(new GitCommand(this, LISTEN_TO_BOTNAME));
+        this.commands.push(new RandomNumberCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
+        this.commands.push(new HelpCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
     }
 
-    listenTo(messages, whatToListenTo, callback) {
-        console.log(`listenTo(${messages}, ${whatToListenTo}, cb)`);
-        let ms = Array.isArray(messages) ? messages : [messages];
-        this.controller.hears(ms, whatToListenTo, callback);
-    }
-
-    onShowGitInformation(bot, message) {
-        console.log("onShowGitInformation");        
-    }
-
-    onHelp(bot, message) {
-        console.log("onHelp");
-
-        let reply = ["Available commands are:\n"];
-
-        for (let cmd of this.commands) {
-            let msg = "";
-            try {
-                msg = cmd.helpText();
-            } catch(err) {
-                msg = `Command '${cmd.name}' has no help available. :-(`;
-            }
-            reply.push(msg);
-        }
-
-        bot.reply(message, reply.join("\n\n"));
-    }
-    
     onTeamJoin(bot, message) {
         this.updateCacheUserInfo(message.user);
     }
+
     onUserChange(bot, message) {
         this.updateCacheUserInfo(message.user);
     }
+
     updateCacheUserInfo(user) {
         console.log("Need to add or update cached info for user ", user.id);
 
@@ -161,4 +128,4 @@ class Bot {
 }
 
 
-export { Bot as default };
+export { CommandManager as default };

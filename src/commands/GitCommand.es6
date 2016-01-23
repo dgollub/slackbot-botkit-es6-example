@@ -14,9 +14,12 @@ let git  = require("nodegit");  // http://www.nodegit.org/
 let path = require('path');
 let fs   = require('fs');
 
+
+const COMMAND = "git";
+
 // TODO(dkg): implement commands that allow us to update the bot from the git repository
 //            and automatically restart it
-const CMDS_INFO = ["^git info", "^git$"];
+const CMDS_INFO = [`^${COMMAND} info`, `^${COMMAND}$`];
 
 
 let getGitCommitInfo = async () => {
@@ -61,10 +64,10 @@ let getGitCommitInfo = async () => {
 
 class GitCommand extends BaseCommand {
 
-    constructor(controller, slackInfo, listenToTypes) {
+    constructor(manager, listenToTypes) {
         console.log("GitCommand");
 
-        super("Git", controller, slackInfo);
+        super(COMMAND, manager);
 
         this.onGetGitCommitInfo = this.onGetGitCommitInfo.bind(this);
 
@@ -76,7 +79,7 @@ class GitCommand extends BaseCommand {
     helpText() {
         let msg = [];
 
-        msg.push(`*${this.name}* allows you to display the git repository information for this bot.`);
+        msg.push(this.helpShortDescription());
         msg.push("`* requires admin powers`");
         msg.push("```");
 
@@ -93,6 +96,10 @@ class GitCommand extends BaseCommand {
         msg.push("```");
         
         return msg.join("\n");
+    }
+
+    helpShortDescription() {
+        return `*${this.name}* allows you to display the git repository information for this bot.`;
     }
 
     async onGetGitCommitInfo(bot, message) {

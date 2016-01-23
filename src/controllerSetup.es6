@@ -5,7 +5,7 @@
 "use strict";
 
 import config                           from './configuration.es6';
-import Bot                              from './bot.es6';
+import CommandManager                   from './CommandManager.es6';
 import { db, initializeDatabaseTables } from './db.es6';
 import { formatUptime }                 from './utils.es6';
 
@@ -24,7 +24,7 @@ let controller = Botkit.slackbot({
     // just implement something else using sqlite on its own.
 });
 
-let cthulhuBot = null;
+let commandManager = null;
 
 let startupCallback = (err, bot, payload) => {
     if (err) {
@@ -34,7 +34,7 @@ let startupCallback = (err, bot, payload) => {
 
     initializeDatabaseTables();
 
-    cthulhuBot = new Bot(controller, payload);
+    commandManager = new CommandManager(controller, payload);
     
     console.info("Startup was successful it seems.");
 };
@@ -100,21 +100,13 @@ controller.hears(['^call me (.*)'], LISTEN_TO, (bot, message) => {
 
 controller.hears(['what is my name','who am i'], LISTEN_TO, (bot, message) => {
 
-    cthulhuBot.loadUserFromMessage(message, (user) => {
+    commandManager.loadUserFromMessage(message, (user) => {
         if (user && user.name) {
           bot.reply(message, `Your name is @${user.name}! You should know that.`);
         } else {
           bot.reply(message, "I don't know yet!");
         }
     });
-
-    // controller.storage.users.get(message.user, (err, user) => {
-    //     if (user && user.name) {
-    //       bot.reply(message, `Your name is ${user.name}`);
-    //     } else {
-    //       bot.reply(message, "I don't know yet!");
-    //     }
-    // });
 
 }); // what is my name, who am i
 
@@ -166,7 +158,7 @@ controller.on('channel_joined', (bot, message) => {
 
     console.info("Somebody joined.", message);
 
-    cthulhuBot.loadUserFromMessage(message, (user) => {
+    commandManager.loadUserFromMessage(message, (user) => {
         bot.reply(message, `Hello there, @${user.name}! Welcome to the club!`);
     });
 

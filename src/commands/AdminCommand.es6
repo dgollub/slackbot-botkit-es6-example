@@ -15,9 +15,11 @@ import { Promise }                  from 'bluebird';
 
 import { removeCommandFromMessage, getUserFromList, getUserName, privateMsgToUser } from '../utils.es6';
 
-const CMDS_ADMIN_ADD        = ["^admin add"];
-const CMDS_ADMIN_DELETE     = ["^admin delete", "^admin remove", "^admin rm"];
-const CMDS_ADMIN_LIST       = ["^admin list", "^admin help", "^admin$"];
+const COMMAND = "admin";
+
+const CMDS_ADD    = [`^${COMMAND} add`];
+const CMDS_DELETE = [`^${COMMAND} delete`, `^${COMMAND} remove`, `^${COMMAND} rm`];
+const CMDS_LIST   = [`^${COMMAND} list`, `^${COMMAND} help`, `^${COMMAND}$`];
 
 const DB_TABLE = "admin";
 const SUPERUSER_PWD = config.superadminpassword;
@@ -78,18 +80,26 @@ let dbDeleteAdmin = (userId) => {
 
 class AdminCommand extends BaseCommand {
 
-    constructor(controller, slackInfo, listenToTypes) {
+    constructor(manager, listenToTypes) {
         console.log("AdminCommand");
 
-        super("Admin", controller, slackInfo);
+        super(COMMAND, manager);
 
         this.onAddAdmin = this.onAddAdmin.bind(this);
         this.dbDeleteAdmin = this.dbDeleteAdmin.bind(this);
         this.onGetAdminList = this.onGetAdminList.bind(this);
         
-        this.listenTo(CMDS_ADMIN_ADD, listenToTypes, this.onAddAdmin);
-        this.listenTo(CMDS_ADMIN_DELETE, listenToTypes, this.dbDeleteAdmin);
-        this.listenTo(CMDS_ADMIN_LIST, listenToTypes, this.onGetAdminList);
+        this.listenTo(CMDS_ADD, listenToTypes, this.onAddAdmin);
+        this.listenTo(CMDS_DELETE, listenToTypes, this.dbDeleteAdmin);
+        this.listenTo(CMDS_LIST, listenToTypes, this.onGetAdminList);
+    }
+
+    helpText() {
+        return this.helpShortDescription();
+    }
+
+    helpShortDescription() {
+        return `*${this.name}* allows you to display and promote (or demote) users to (or from) admin status.`;
     }
 
     onGetAdminList(bot, message) {
@@ -133,7 +143,7 @@ class AdminCommand extends BaseCommand {
 
         bot.startPrivateConversation(message, (err, conversation) => {
             conversation.ask("Password, please.", (message, conversation) => {
-                let pwd = removeCommandFromMessage(message, CMDS_ADMIN_LIST);
+                let pwd = removeCommandFromMessage(message, CMDS_LIST);
                 if (pwd === SUPERUSER_PWD) {
                     fnGetAdminListAndReply(conversation);
                 } else {
@@ -148,7 +158,7 @@ class AdminCommand extends BaseCommand {
     dbDeleteAdmin(bot, message) {
         console.log("dbDeleteAdmin");
 
-        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_ADMIN_DELETE));
+        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_DELETE));
         let user = getUserFromList(this.slackInfo.users || [], possibleUserName)
 
         if (!user) {
@@ -189,7 +199,7 @@ class AdminCommand extends BaseCommand {
 
         bot.startPrivateConversation(message, (err, conversation) => {
             conversation.ask("Password, please.", (message, conversation) => {
-                let pwd = removeCommandFromMessage(message, CMDS_ADMIN_LIST);
+                let pwd = removeCommandFromMessage(message, CMDS_LIST);
                 if (pwd === SUPERUSER_PWD) {
                     fnDeleteAdminUserAndReply(user, conversation);
                 } else {
@@ -203,7 +213,7 @@ class AdminCommand extends BaseCommand {
     onAddAdmin(bot, message) {
         console.log("onAddAdmin");
 
-        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_ADMIN_ADD));
+        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_ADD));
         let user = getUserFromList(this.slackInfo.users || [], possibleUserName)
 
         if (!user) {
@@ -244,7 +254,7 @@ class AdminCommand extends BaseCommand {
 
         bot.startPrivateConversation(message, (err, conversation) => {
             conversation.ask("Password, please.", (message, conversation) => {
-                let pwd = removeCommandFromMessage(message, CMDS_ADMIN_LIST);
+                let pwd = removeCommandFromMessage(message, CMDS_LIST);
                 if (pwd === SUPERUSER_PWD) {
                     fnAddAdminUserAndReply(user, conversation);
                 } else {

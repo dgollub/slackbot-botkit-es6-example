@@ -18,10 +18,11 @@ const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DI
 
 class BaseCommand {
 
-    constructor(name, controller, slackInfo) {
+    constructor(name, manager) {
         this.name = name;
-        this.controller = controller;
-        this.slackInfo = slackInfo;
+        this.manager = manager;
+        this.controller = manager.controller;
+        this.slackInfo = manager.slackInfo;
     }
 
     listenTo(messages, whatToListenTo, callback) {
@@ -57,6 +58,10 @@ class BaseCommand {
 
     // returns the usage/help text for this command/these commands
     helpText() {
+        throw "Please implement this function in your subclass!";
+    }
+
+    helpShortDescription() {
         throw "Please implement this function in your subclass!";
     }
 

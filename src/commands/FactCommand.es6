@@ -15,10 +15,13 @@ import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 //            be their own classes/instances - one for each type of command,
 //            and then the helpText implemenation could be a lot cleanrer,
 //            also a bunch of other things could be cleaner and more straight forward
-const CMDS_ADD_FACT    = ["^fact add", "^facts add"];
-const CMDS_UPDATE_FACT = ["^fact update"];
-const CMDS_LIST_FACTS  = ["^facts list$", "^facts$"];
-const CMDS_TELL_FACT   = ["^fact$", "^fact random", "^fact show", "^fact tell"];
+
+const COMMAND = "fact";
+
+const CMDS_ADD    = [`^${COMMAND} add`];
+const CMDS_UPDATE = [`^${COMMAND} update`];
+const CMDS_LIST   = [`^${COMMAND} list$`];
+const CMDS_TELL   = [`^${COMMAND}$`, `^${COMMAND} random`, `^${COMMAND} show`, `^${COMMAND} tell`];
 
 
 let dbGetFacts = () => {
@@ -76,10 +79,10 @@ let dbUpdateFact = (id, fact) => {
 
 class FactCommand extends BaseCommand {
 
-    constructor(controller, slackInfo, listenToTypes) {
+    constructor(manager, listenToTypes) {
         console.log("FactCommand");
 
-        super("Facts", controller, slackInfo);
+        super(COMMAND, manager);
 
         this.onGetFacts = this.onGetFacts.bind(this);
         this.onGetRandomFact = this.onGetRandomFact.bind(this);
@@ -88,16 +91,16 @@ class FactCommand extends BaseCommand {
 
         this.isAdmin = this.isAdmin.bind(this);
 
-        this.listenTo(CMDS_LIST_FACTS, listenToTypes, this.onGetFacts);
-        this.listenTo(CMDS_TELL_FACT, listenToTypes, this.onGetRandomFact);
-        this.listenTo(CMDS_ADD_FACT, listenToTypes, this.onAddFact);
-        this.listenTo(CMDS_UPDATE_FACT, listenToTypes, this.onUpdateFact);
+        this.listenTo(CMDS_LIST, listenToTypes, this.onGetFacts);
+        this.listenTo(CMDS_TELL, listenToTypes, this.onGetRandomFact);
+        this.listenTo(CMDS_ADD, listenToTypes, this.onAddFact);
+        this.listenTo(CMDS_UPDATE, listenToTypes, this.onUpdateFact);
     }
 
     helpText() {
         let msg = [];
 
-        msg.push(`*${this.name}* allows you to display and add/edit/remove random facts.`);
+        msg.push(this.helpShortDescription());
         msg.push("`* requires admin powers`");
         msg.push("```");
 
@@ -109,14 +112,18 @@ class FactCommand extends BaseCommand {
             return exampleCmd.length > 0 ? `${msg}\n\tExample: ${exampleCmd}` : msg;
         };
 
-        msg.push(fnAddHelp(CMDS_ADD_FACT, "* Add a fact.", "<fact>", "'Adventures of Power' is a funny movie."));
-        msg.push(fnAddHelp(CMDS_UPDATE_FACT, "* Update an existing fact.", "<factId> <updated fact text>", "1 'Kingsman' is an amazing movie! Watch it!"));
-        msg.push(fnAddHelp(CMDS_LIST_FACTS, "List all existing facts."));
-        msg.push(fnAddHelp(CMDS_TELL_FACT, "List a random fact from the list."));
+        msg.push(fnAddHelp(CMDS_ADD, "* Add a fact.", "<fact>", "'Adventures of Power' is a funny movie."));
+        msg.push(fnAddHelp(CMDS_UPDATE, "* Update an existing fact.", "<factId> <updated fact text>", "1 'Kingsman' is an amazing movie! Watch it!"));
+        msg.push(fnAddHelp(CMDS_LIST, "List all existing facts."));
+        msg.push(fnAddHelp(CMDS_TELL, "List a random fact from the list."));
 
         msg.push("```");
         
         return msg.join("\n");
+    }
+
+    helpShortDescription() {
+        return `*${this.name}* allows you to display and add/edit/remove random facts.`;
     }
 
     onGetFacts(bot, message) {
@@ -170,7 +177,7 @@ class FactCommand extends BaseCommand {
         if (!isAdmin) return;
 
         // TODO(dkg): add security/auth stuff here.
-        let fact = removeCommandFromMessage(message, CMDS_ADD_FACT);
+        let fact = removeCommandFromMessage(message, CMDS_ADD);
         
         dbAddFact(fact)
             .then((stmt) => {
@@ -188,7 +195,7 @@ class FactCommand extends BaseCommand {
         let isAdmin = await this.isAdmin(bot, message);
         if (!isAdmin) return;
 
-        let msg = removeCommandFromMessage(message, CMDS_UPDATE_FACT);
+        let msg = removeCommandFromMessage(message, CMDS_UPDATE);
         let tmp = msg.split(" ");
         let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);
 
