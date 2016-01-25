@@ -87,6 +87,9 @@ class KarmaCommand extends BaseCommand {
         // Some extra listeners that should not show up in the help text.
         // TODO(dkg): make those words configurable - maybe in the db as well?
         // TODO(dkg): what about "love your shit, you damn genius"??? lol
+        // TODO(dkg): maybe we don't want a bot.reply feedback, only a private message?
+        //            as the user should not really know what words trigger this?! Hmmm.
+        //            not sure - need to figure that out later
         this.listenTo(/(shit|fuck|damn|asshole|cum bucket|whore|gangbang)/gi, LISTEN_TO_ALL, this.onSwearWords);
         this.listenTo(/(love you|love is all around|love fool|snoop lion|snoop dog)/gi, LISTEN_TO_ALL, this.onCleanWords);
     }
@@ -152,63 +155,6 @@ class KarmaCommand extends BaseCommand {
     async onCleanWords(bot, message) {
         return this.onCertainWord(bot, message, true);
     }
-
-    // async onGetRandomFact(bot, message) {
-    //     console.log("onGetRandomFact");
-
-    //     let facts = await sqlSelect(`SELECT * FROM ${DB_TABLE} ORDER BY id`);
-
-    //     if (!facts || facts.length === 0) {
-
-    //         bot.reply(message, "I don't know anything right now.");
-
-    //     } else {
-
-    //         let factIdx = _.random(0, facts.length - 1);
-    //         let fact = facts[factIdx];
-    //         let factNum = `Random fact *#${fact.id}*: `;
-
-    //         bot.reply(message, factNum + "```" + fact.fact + "```");
-
-    //     }        
-    // }
-
-    // async onAddFact(bot, message) {
-    //     console.log("onAddFact");
-
-    //     let isAdmin = await this.isAdmin(bot, message);
-    //     if (!isAdmin) return;
-
-    //     let fact = this.getCommandArguments(message, this.onAddFact);
-    //     let statement = await sqlInsert(DB_TABLE, "fact", fact);
-
-    //     bot.reply(message, "Added the fact to my knowledge base. ID#" + statement.lastID);
-    // }
-
-    // async onUpdateFact(bot, message) {
-    //     console.log("onUpdateFact");
-
-    //     let isAdmin = await this.isAdmin(bot, message);
-    //     if (!isAdmin) return;
-
-    //     let msg = this.getCommandArguments(message, this.onUpdateFact);
-    //     let tmp = msg.split(" ");
-    //     let factId = tmp.length > 1 ? parseInt(tmp[0].trim(), 10) : parseInt(false);
-
-    //     if (!isNaN(factId) && factId > 0) {
-    //         let fact = msg.substr(tmp[0].length).trim();
-    //         let statement = await sqlUpdate(DB_TABLE, factId, "fact", fact);
-
-    //         if (statement.changes === 0) {
-    //             bot.reply(message, "The specified fact wasn't found.");
-    //         } else {
-    //             bot.reply(message, "Updated the fact.");
-    //         }
-
-    //     } else {
-    //         bot.reply(message, 'You will need to provide a Fact#ID as first argument.');
-    //     }
-    // }
 
 }
 
