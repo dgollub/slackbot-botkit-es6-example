@@ -12,8 +12,6 @@ import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 
 const COMMAND = "help";
 
-// TODO(dkg): implement commands that allow us to update the bot from the git repository
-//            and automatically restart it
 const CMDS_HELP = [`^${COMMAND}$`, `^${COMMAND}`];
 
 
@@ -51,6 +49,7 @@ class HelpCommand extends BaseCommand {
             try {
                 msg = useFullDescription ? cmd.helpText() : cmd.helpShortDescription();
             } catch(err) {
+                console.error(`${cmd.name} error: ${err.message}`);
                 msg = `Command '${cmd.name}' has no help available. :-(`;
             }
             return msg;

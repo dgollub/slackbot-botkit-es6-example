@@ -7,10 +7,11 @@ import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';
 import { getAdminList }             from './AdminCommand.es6';
+import Option                       from './Option.es6';
 
 import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 
-
+// TODO(dkg): DO THIS NEXT!
 // TODO(dkg): maybe these should not be simple constants in arrays, but rather
 //            be their own classes/instances - one for each type of command,
 //            and then the helpText implemenation could be a lot cleanrer,
@@ -18,11 +19,10 @@ import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
 
 const COMMAND = "fact";
 
-const CMDS_ADD    = [`^${COMMAND} add`];
-const CMDS_UPDATE = [`^${COMMAND} update`];
-const CMDS_LIST   = [`^${COMMAND} list$`];
-const CMDS_TELL   = [`^${COMMAND}$`, `^${COMMAND} random`, `^${COMMAND} show`, `^${COMMAND} tell`];
-
+// const CMDS_ADD    = [`^${COMMAND} add`];
+// const CMDS_UPDATE = [`^${COMMAND} update`];
+// const CMDS_LIST   = [`^${COMMAND} list$`];
+// const CMDS_TELL   = [`^${COMMAND}$`, `^${COMMAND} random`, `^${COMMAND} show`, `^${COMMAND} tell`];
 
 let dbGetFacts = () => {
     let p = new Promise((resolve, reject) => {
@@ -82,7 +82,7 @@ class FactCommand extends BaseCommand {
     constructor(manager, listenToTypes) {
         console.log("FactCommand");
 
-        super(COMMAND, manager);
+        super(COMMAND, manager, listenToTypes);
 
         this.onGetFacts = this.onGetFacts.bind(this);
         this.onGetRandomFact = this.onGetRandomFact.bind(this);
@@ -91,12 +91,17 @@ class FactCommand extends BaseCommand {
 
         this.isAdmin = this.isAdmin.bind(this);
 
-        this.listenTo(CMDS_LIST, listenToTypes, this.onGetFacts);
-        this.listenTo(CMDS_TELL, listenToTypes, this.onGetRandomFact);
-        this.listenTo(CMDS_ADD, listenToTypes, this.onAddFact);
-        this.listenTo(CMDS_UPDATE, listenToTypes, this.onUpdateFact);
+        const options = [
+            new Option(this.name, "add", "add", "<fact text>", this.onAddFact, "Add a new fact to the list.", true),
+            new Option(this.name, "update", "update", ["<fact id>", "<fact text>"], this.onUpdateFact, "Update an existing fact.", true),
+            new Option(this.name, "list", "list$", "", this.onGetFacts, "List all facts."),
+            new Option(this.name, ["", "random", "show", "tell"], ["$", "random$", "show$", "tell$"], "", this.onGetRandomFact, "Show a random fact.")
+        ];
+
+        this.setupOptions(options);
     }
 
+    // TODO(dkg): fix this
     helpText() {
         let msg = [];
 
@@ -104,18 +109,9 @@ class FactCommand extends BaseCommand {
         msg.push("`* requires admin powers`");
         msg.push("```");
 
-        let fnAddHelp = (orgCmds, shortDescription, parameters="", example="") => {
-            let cmds = orgCmds.map(c => c.replace(/[^\w\s]/gi, ''));
-            let exampleCmd =  example.length > 0 ? `${cmds[0]} ${example}` : "";
-            let msg = `${cmds.join("|")} ${parameters}\n\tBrief: ${shortDescription}`;
-
-            return exampleCmd.length > 0 ? `${msg}\n\tExample: ${exampleCmd}` : msg;
-        };
-
-        msg.push(fnAddHelp(CMDS_ADD, "* Add a fact.", "<fact>", "'Adventures of Power' is a funny movie."));
-        msg.push(fnAddHelp(CMDS_UPDATE, "* Update an existing fact.", "<factId> <updated fact text>", "1 'Kingsman' is an amazing movie! Watch it!"));
-        msg.push(fnAddHelp(CMDS_LIST, "List all existing facts."));
-        msg.push(fnAddHelp(CMDS_TELL, "List a random fact from the list."));
+        for (let option of this.options) {
+            msg.push(option.helpText());
+        }
 
         msg.push("```");
         

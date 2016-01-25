@@ -25,6 +25,9 @@ const LISTEN_TO_BOTNAME = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION].j
 const LISTEN_TO_ALL = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
 
 
+// TODO(dkg): add a catch all command that catches all direct messages that are not actively handled by
+//            an assigned/specialized command and return a message ala "sorry, command unknown - try again"
+//            message (or use fuzzy logic to suggest a more sutable command)
 class CommandManager {
 
     constructor(controller, slackInfo) {
@@ -37,7 +40,6 @@ class CommandManager {
         this.updateCacheUserInfo  = this.updateCacheUserInfo.bind(this);
 
         // listen to team_join and user_change events to make sure you update your cached user list
-
         this.controller.on('team_join', this.onTeamJoin);
         this.controller.on('user_change', this.onUserChange);
 

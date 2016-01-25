@@ -18,9 +18,11 @@ const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DI
 
 class BaseCommand {
 
-    constructor(name, manager) {
+    // TODO(dkg): fix this
+    constructor(name, manager, listenToTypes) {
         this.name = name;
         this.manager = manager;
+        this.listenToTypes = listenToTypes || null;
         this.controller = manager.controller;
         this.slackInfo = manager.slackInfo;
     }
@@ -31,15 +33,22 @@ class BaseCommand {
         this.controller.hears(ms, whatToListenTo, callback);
     }
 
+    setupOptions(options=[]) {
+        for (let option of options) {
+            let listenPatterns = option.getListenToPatterns();
+            this.listenTo(listenPatterns, this.listenToTypes, option.onCallback);
+        }
+        this.options = options;
+    }
+
     // returns a promise that can be "await"ed
     async isAdmin(bot, message) {
         let userId = message.user || null;
 
         try {
-            let admins = await getAdminList();
 
+            let admins = await getAdminList();
             let isAdmin = !!(admins.find(a => a.userid === userId));
-            console.log("isAdmin", isAdmin);
 
             if (!isAdmin) {
                 // privateMsgToUser(bot, userId, "Sorry, you are not qualified for this command.");
