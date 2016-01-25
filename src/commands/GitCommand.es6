@@ -3,12 +3,14 @@
 //
 
 import BaseCommand                  from './BaseCommand.es6';
-import { db }                       from '../db.es6';
+import Option                       from './Option.es6';
+
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';
 import { getAdminList }             from './AdminCommand.es6';
 
-import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
+import { privateMsgToUser }         from '../utils.es6';
+
 
 let git  = require("nodegit");  // http://www.nodegit.org/
 let path = require('path');
@@ -16,10 +18,7 @@ let fs   = require('fs');
 
 
 const COMMAND = "git";
-
-// TODO(dkg): implement commands that allow us to update the bot from the git repository
-//            and automatically restart it
-const CMDS_INFO = [`^${COMMAND} info`, `^${COMMAND}$`];
+const BRIEF_DESCRIPTION = `allows you to display the git repository information for this bot`;
 
 
 let getGitCommitInfo = async () => {
@@ -61,45 +60,22 @@ let getGitCommitInfo = async () => {
 };
 
 
-
 class GitCommand extends BaseCommand {
 
     constructor(manager, listenToTypes) {
         console.log("GitCommand");
 
-        super(COMMAND, manager);
+        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes);
 
         this.onGetGitCommitInfo = this.onGetGitCommitInfo.bind(this);
 
         this.isAdmin = this.isAdmin.bind(this);
 
-        this.listenTo(CMDS_INFO, listenToTypes, this.onGetGitCommitInfo);
-    }
+        const options = [
+            new Option(this.name, ["", "info"], ["$", "info$"], "", this.onGetGitCommitInfo, BRIEF_DESCRIPTION)            
+        ];
 
-    helpText() {
-        let msg = [];
-
-        msg.push(this.helpShortDescription());
-        msg.push("`* requires admin powers`");
-        msg.push("```");
-
-        let fnAddHelp = (orgCmds, shortDescription, parameters="", example="") => {
-            let cmds = orgCmds.map(c => c.replace(/[^\w\s]/gi, ''));
-            let exampleCmd =  example.length > 0 ? `${cmds[0]} ${example}` : "";
-            let msg = `${cmds.join("|")} ${parameters}\n\tBrief: ${shortDescription}`;
-
-            return exampleCmd.length > 0 ? `${msg}\n\tExample: ${exampleCmd}` : msg;
-        };
-
-        msg.push(fnAddHelp(CMDS_INFO, "Show basic information about this repository."));
-
-        msg.push("```");
-        
-        return msg.join("\n");
-    }
-
-    helpShortDescription() {
-        return `*${this.name}* allows you to display the git repository information for this bot.`;
+        this.setupOptions(options);
     }
 
     async onGetGitCommitInfo(bot, message) {

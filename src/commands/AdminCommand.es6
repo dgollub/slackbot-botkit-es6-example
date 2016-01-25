@@ -8,73 +8,30 @@
 
 import config                       from '../configuration.es6';
 import BaseCommand                  from './BaseCommand.es6';
+import Option                       from './Option.es6';
 
-import { db }                       from '../db.es6';
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';
 
-import { removeCommandFromMessage, getUserFromList, getUserName, privateMsgToUser } from '../utils.es6';
+import { db, sqlSelect, sqlInsert, sqlDelete }            from '../db.es6';
+import { getUserFromList, getUserName, privateMsgToUser } from '../utils.es6';
 
 const COMMAND = "admin";
-
-const CMDS_ADD    = [`^${COMMAND} add`];
-const CMDS_DELETE = [`^${COMMAND} delete`, `^${COMMAND} remove`, `^${COMMAND} rm`];
-const CMDS_LIST   = [`^${COMMAND} list`, `^${COMMAND} help`, `^${COMMAND}$`];
-
+const BRIEF_DESCRIPTION = "allows you to display and promote (or demote) users to (or from) admin status";
 const DB_TABLE = "admin";
 const SUPERUSER_PWD = config.superadminpassword;
 
 
-let dbGetAdmins = () => {
-    let p = new Promise((resolve, reject) => {
-        console.log("dbGetAdmins");
-        db.all(`SELECT * FROM ${DB_TABLE} ORDER BY id`, [], (err, rows) => {
-            if (err) {
-                console.error("DB SELECT error!", err);
-                reject(err);
-            } else {
-                console.log("admins get from db success");
-                resolve(rows);
-            }
-        });
-    });
-    return p;
+let dbGetAdmins = async () => {
+    return sqlSelect(`SELECT * FROM ${DB_TABLE} ORDER BY userid`);
+}
+
+let dbAddAdmin = async (userId) => {
+    return sqlInsert(DB_TABLE, "userid", userId);
 };
 
-let dbAddAdmin = (userId) => {
-    console.log("dbAddAdmin", userId);
-    let p = new Promise((resolve, reject) => {
-        // NOTE(dkg): have to use ES5 syntax for callback, because ES6 fat arrow functions
-        //            have their own way with 'this', which doesn't work with the sqlite
-        //            nicely in this case.
-        // see details here https://github.com/mapbox/node-sqlite3/issues/560
-        db.run(`INSERT INTO ${DB_TABLE} (userid) VALUES (?)`, userId.trim(), function(err) {
-            if (err) {
-                console.error("DB INSERT error!", err);
-                reject(err);
-            } else {
-                resolve(this);
-            }
-        });
-    });
-    return p;
-};
-
-let dbDeleteAdmin = (userId) => {
-    console.log("dbDeleteAdmin", userId);
-    let p = new Promise((resolve, reject) => {
-        db.run(`DELETE FROM ${DB_TABLE} WHERE userid = $userid`, {
-            $userid: userId
-        }, function(err) {
-            if (err) {
-                console.error("DB DELETE error!", err);
-                reject(err);
-            } else {
-                resolve(this);    
-            }
-        });
-    });
-    return p;
+let dbDeleteAdmin = async (userId) => {
+    return sqlDelete(DB_TABLE, "userid", userId);
 };
 
 
@@ -83,26 +40,26 @@ class AdminCommand extends BaseCommand {
     constructor(manager, listenToTypes) {
         console.log("AdminCommand");
 
-        super(COMMAND, manager);
+        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes);
 
         this.onAddAdmin = this.onAddAdmin.bind(this);
-        this.dbDeleteAdmin = this.dbDeleteAdmin.bind(this);
+        this.onDeleteAdmin = this.onDeleteAdmin.bind(this);
         this.onGetAdminList = this.onGetAdminList.bind(this);
         
-        this.listenTo(CMDS_ADD, listenToTypes, this.onAddAdmin);
-        this.listenTo(CMDS_DELETE, listenToTypes, this.dbDeleteAdmin);
-        this.listenTo(CMDS_LIST, listenToTypes, this.onGetAdminList);
+        const options = [
+            new Option(this.name, "add", "add", "<@user>", this.onAddAdmin, "Add a user as admin to the list.", true),
+            new Option(this.name, ["list", "all"], ["list$", "all$"], "", this.onGetAdminList, "List all admins."),
+            new Option(this.name, ["delete", "remove", "rm"], ["delete", "remove", "rm"], "<@username>", this.onDeleteAdmin, "Delete a user from the admin list.")
+        ];
+
+        this.setupOptions(options);
     }
 
     helpText() {
         return this.helpShortDescription();
     }
 
-    helpShortDescription() {
-        return `*${this.name}* allows you to display and promote (or demote) users to (or from) admin status.`;
-    }
-
-    onGetAdminList(bot, message) {
+    async onGetAdminList(bot, message) {
         console.log("onGetAdminList");
         
         const slackInfo = this.slackInfo;
@@ -139,11 +96,13 @@ class AdminCommand extends BaseCommand {
                 conversation.say(`Sorry. An error happend.\nError: ${err.message}`);
                 conversation.next();
             }
-        }; 
+        };
+
+        const self = this;
 
         bot.startPrivateConversation(message, (err, conversation) => {
             conversation.ask("Password, please.", (message, conversation) => {
-                let pwd = removeCommandFromMessage(message, CMDS_LIST);
+                let pwd = self.getCommandArguments(message, self.onGetAdminList);
                 if (pwd === SUPERUSER_PWD) {
                     fnGetAdminListAndReply(conversation);
                 } else {
@@ -155,10 +114,10 @@ class AdminCommand extends BaseCommand {
 
     }
 
-    dbDeleteAdmin(bot, message) {
-        console.log("dbDeleteAdmin");
+    onDeleteAdmin(bot, message) {
+        console.log("onDeleteAdmin");
 
-        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_DELETE));
+        let possibleUserName = getUserName(this.getCommandArguments(message, this.onDeleteAdmin));
         let user = getUserFromList(this.slackInfo.users || [], possibleUserName)
 
         if (!user) {
@@ -184,22 +143,26 @@ class AdminCommand extends BaseCommand {
                 return;
             }
 
-            dbDeleteAdmin(user.id)
-                .then((stmt) => {
-                    privateMsgToUser(bot, user.id, "Your admin powers have been taken away from you.\nYou are not worthy.");
-                    conversation.say(`Deleted the user ${user.name} from my admin database.`);
-                    conversation.next();
-                })
-                .catch((err) => {
-                    console.log("error?", err);
-                    conversation.say(`Sorry. An error happend.\nError: ${err}`);
-                    conversation.next();
-                });
-        }
+            try {
+                let statement = await dbDeleteAdmin(user.id);
+
+                privateMsgToUser(bot, user.id, "Your admin powers have been taken away from you.\nYou are not worthy.");
+             
+                conversation.say(`Deleted the user ${user.name} from my admin database.`);
+                conversation.next();
+
+            } catch(err) {
+                console.log("error?", err);
+                conversation.say(`Sorry. An error happend.\nError: ${err}`);
+                conversation.next();
+            }
+        };
+
+        const self = this;
 
         bot.startPrivateConversation(message, (err, conversation) => {
             conversation.ask("Password, please.", (message, conversation) => {
-                let pwd = removeCommandFromMessage(message, CMDS_LIST);
+                let pwd = self.getCommandArguments(message, self.onDeleteAdmin);
                 if (pwd === SUPERUSER_PWD) {
                     fnDeleteAdminUserAndReply(user, conversation);
                 } else {
@@ -213,7 +176,7 @@ class AdminCommand extends BaseCommand {
     onAddAdmin(bot, message) {
         console.log("onAddAdmin");
 
-        let possibleUserName = getUserName(removeCommandFromMessage(message, CMDS_ADD));
+        let possibleUserName = getUserName(this.getCommandArguments(message, this.onAddAdmin));
         let user = getUserFromList(this.slackInfo.users || [], possibleUserName)
 
         if (!user) {
@@ -239,22 +202,26 @@ class AdminCommand extends BaseCommand {
                 return;
             }
 
-            dbAddAdmin(user.id)
-                .then((stmt) => {
-                    privateMsgToUser(bot, user.id, "You were added to my admin database as admin.");
-                    conversation.say(`Added the user ${user.name} as admin to my database. ID#${stmt.lastID}`);
-                    conversation.next();
-                })
-                .catch((err) => {
-                    console.log("error?", err);
-                    conversation.say(`Sorry. An error happend.\nError: ${err}`);
-                    conversation.next();
-                });
-        }
+            try {
+                let statement = await dbAddAdmin(user.id);
+
+                privateMsgToUser(bot, user.id, "You were added to my admin database as admin.");
+
+                conversation.say(`Added the user ${user.name} as admin to my database. ID#${statement.lastID}`);
+                conversation.next();
+
+            } catch(err) {
+                console.log("error?", err);
+                conversation.say(`Sorry. An error happend.\nError: ${err}`);
+                conversation.next();
+            }
+        };
+
+        const self = this;
 
         bot.startPrivateConversation(message, (err, conversation) => {
             conversation.ask("Password, please.", (message, conversation) => {
-                let pwd = removeCommandFromMessage(message, CMDS_LIST);
+                let pwd = self.getCommandArguments(message, self.onAddAdmin);
                 if (pwd === SUPERUSER_PWD) {
                     fnAddAdminUserAndReply(user, conversation);
                 } else {

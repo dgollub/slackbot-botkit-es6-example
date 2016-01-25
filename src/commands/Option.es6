@@ -71,11 +71,16 @@ class Option {
         return commands;
     }
 
-    // TODO(dkg): clean up the formatting here to make it look nicer
     helpText() {
         let needsAdmin = this.needsAdmin ? "*" : "";
         let params = this.parameters.length > 0 ? " " + this.parameters.join(" ") : "";
-        let help = `${this.command} ${this.option.join("|")}${params}\n\t${needsAdmin}${this.helpOptionText}`;
+        let options = this.option.join("|");
+        // TODO(dkg): clean up the formatting here to make it look nicer
+        // maybe like this [|abc|cde] instead of "|abc|cde"???
+        // if (options.substr(0, 1) === "|") {
+        //     options = options.substr(1);
+        // }
+        let help = `${this.command} ${options}${params}\n\t${needsAdmin}${this.helpOptionText}`;
         return help;
     }
 }

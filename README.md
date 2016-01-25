@@ -51,7 +51,7 @@ You can also see the complete list of admins with this command
 Admin users can add, edit and remove Facts from the fact database. The fact database can be queried via the `fact` command.
 
 ```bash
-@botname facts list  # list all facts
+@botname fact list  # list all facts
 @botname fact random  # list a random fact from the list
 @botname fact add <new fact text>  # add a fact to the list, needs admin user
 @botname fact delete <factid>  # remove a fact from the list, needs admin user
@@ -62,14 +62,27 @@ Admin users can add, edit and remove Facts from the fact database. The fact data
 
 You can get a random number (range 0 to 100) via this command
 ```bash
-@botname random number
-# or
-@botname rnd
+@botname rndnum
 ```
+
+## Git Information
+
+You can see the latest commit message for the current active branch that the bot is run on.
+```bash
+@botname git info
+```
+
 
 ## Help
 
 The `help` command will display a help text for all available commands (if they provide a help text that is).
+
+
+# TODO
+
+- add a catch all command that catches all direct messages that are not actively handled by an assigned/specialized command and return a message ala "sorry, command unknown - try again" message (or use fuzzy logic to suggest a more sutable command)
+
+- ...
 
 
 # Copyright

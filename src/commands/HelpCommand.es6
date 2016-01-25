@@ -3,17 +3,16 @@
 //
 
 import BaseCommand                  from './BaseCommand.es6';
-import { db }                       from '../db.es6';
+import Option                       from './Option.es6';
+
 import { _ }                        from 'lodash';
 import { Promise }                  from 'bluebird';
 
-import { removeCommandFromMessage, privateMsgToUser } from '../utils.es6';
+import { privateMsgToUser }         from '../utils.es6';
 
 
 const COMMAND = "help";
-
-const CMDS_HELP = [`^${COMMAND}$`, `^${COMMAND}`];
-
+const BRIEF_DESCRIPTION = `displays available commands or help for a specific command`;
 
 
 class HelpCommand extends BaseCommand {
@@ -21,26 +20,26 @@ class HelpCommand extends BaseCommand {
     constructor(manager, listenToTypes) {
         console.log("HelpCommand");
 
-        super(COMMAND, manager);
+        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes);
 
         this.onHelp = this.onHelp.bind(this);
 
-        this.listenTo(CMDS_HELP, listenToTypes, this.onHelp);
+        const options = [
+            new Option(this.name, ["", "info", "?"], ["", "info$", "\\?"], "", this.onHelp, BRIEF_DESCRIPTION)
+        ];
+
+        this.setupOptions(options);
     }
 
     helpText() {
         return this.helpShortDescription();
     }
 
-    helpShortDescription() {
-        return `*${this.name}* displays available commands or help for a specific command.`;
-    }
-
     onHelp(bot, message) {
         console.log("onHelp");
 
         let commands = this.manager.commands || [];
-        let helpForCommand = removeCommandFromMessage(message, CMDS_HELP);
+        let helpForCommand = this.getCommandArguments(message, this.onHelp);
         let reply = [];
 
         let fnFormatCommandHelp = (cmd, useFullDescription=false, alt="") => {
@@ -55,7 +54,7 @@ class HelpCommand extends BaseCommand {
             return msg;
         };
 
-        if (helpForCommand.length > 0) {
+        if (helpForCommand !== null && helpForCommand.length > 0) {
             helpForCommand = helpForCommand.toLowerCase();
             
             let cmd = commands.find(c => c.name === helpForCommand);

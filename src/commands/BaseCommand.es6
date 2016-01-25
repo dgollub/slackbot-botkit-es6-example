@@ -5,7 +5,7 @@
 // NOTE(dkg): circular reference to AdminCommand, which references this file....
 //            is there a better way to do this? Surely.
 import { getAdminList } from './AdminCommand.es6';
-
+import { removeCommandFromMessage } from '../utils.es6';
 
 const LISTEN_TO_DIRECT_MESSAGE = "direct_message";
 const LISTEN_TO_DIRECT_MENTION = "direct_mention";
@@ -19,8 +19,9 @@ const LISTEN_TO_ALL = [LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DI
 class BaseCommand {
 
     // TODO(dkg): fix this
-    constructor(name, manager, listenToTypes) {
+    constructor(name, briefDescription, manager, listenToTypes) {
         this.name = name;
+        this.briefDescription = briefDescription || "Sorry, no command description available.";
         this.manager = manager;
         this.listenToTypes = listenToTypes || null;
         this.controller = manager.controller;
@@ -65,13 +66,41 @@ class BaseCommand {
         }
     }
 
-    // returns the usage/help text for this command/these commands
+    getCommandArguments(message, fn) {
+
+        for (let option of this.options) {
+            if (option.onCallback !== fn) {
+                console.log("no match for function callback", option.onCallback, fn);
+                continue;
+            }
+            let cmd = option.getReadableCommands();
+            let args = removeCommandFromMessage(message, cmd);
+            if (args) {
+                return args;
+            }
+        }
+        
+        return null;
+    }
+
     helpText() {
-        throw "Please implement this function in your subclass!";
+        let msg = [];
+
+        msg.push(this.helpShortDescription());
+        msg.push("`* requires admin powers`");
+        msg.push("```");
+
+        for (let option of this.options) {
+            msg.push(option.helpText());
+        }
+
+        msg.push("```");
+        
+        return msg.join("\n");
     }
 
     helpShortDescription() {
-        throw "Please implement this function in your subclass!";
+        return `*${this.name}* ${this.briefDescription}.`;
     }
 
 }
