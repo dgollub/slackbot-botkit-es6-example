@@ -35,6 +35,7 @@ let initDbTables = () => {
     db.run("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, userid VARCHAR(255), name VARCHAR(255), email VARCHAR(255))");
     db.run("CREATE TABLE IF NOT EXISTS fact (id INTEGER PRIMARY KEY AUTOINCREMENT, fact TEXT)");
     db.run("CREATE TABLE IF NOT EXISTS admin (id INTEGER PRIMARY KEY AUTOINCREMENT, userid VARCHAR(255))");
+    db.run("CREATE TABLE IF NOT EXISTS karma (id INTEGER PRIMARY KEY AUTOINCREMENT, userid VARCHAR(255), karma INTEGER DEFAULT 0, reason TEXT)");
 };
 
 
@@ -64,17 +65,21 @@ let sqlInsert = async (table, fieldsToUse, valuesToInsert) => {
     let fields = [].concat(fieldsToUse);
     let values = [].concat(valuesToInsert);
 
-    // console.log("db fields", fields);
-    // console.log("db values", values);
+    console.log("db fields", fields);
+    console.log("db values", values);
 
     let p = new Promise((resolve, reject) => {
+
         let vs = values.length === 1 ? "?" : "?, ".repeat(values.length);
+        console.log("testing", vs);
+
         let pos = vs.lastIndexOf("?,");
-        vs = pos > -1 ? vs.substr(0, vs.length - pos) : vs;
+
+        vs = pos > -1 ? vs.substr(0, pos+1) : vs;
 
         let sql = `INSERT INTO ${table} (${fields.join(", ")}) VALUES (${vs}) `;
 
-        // console.log("vs", vs);
+        console.log("vs", vs);
         console.log("sql", sql);
         
         // NOTE(dkg): have to use ES5 syntax for callback, because ES6 fat arrow functions

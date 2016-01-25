@@ -9,20 +9,16 @@ import { db }               from './db.es6';
 import AdminCommand         from './commands/AdminCommand.es6';
 import FactCommand          from './commands/FactCommand.es6';
 import GitCommand           from './commands/GitCommand.es6';
-import RandomNumberCommand  from './commands/RandomNumberCommand.es6';
 import HelpCommand          from './commands/HelpCommand.es6';
+import KarmaCommand         from './commands/KarmaCommand.es6';
+import RandomNumberCommand  from './commands/RandomNumberCommand.es6';
 
-
-const LISTEN_TO_DIRECT_MESSAGE = "direct_message";
-const LISTEN_TO_DIRECT_MENTION = "direct_mention";
-const LISTEN_TO_MENTION = "mention";
-const LISTEN_TO_AMBIENT = "ambient";
-const LISTEN_TO_MESSAGES = "message_received";
-
-const LISTEN_TO_OTHERS = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_MENTION].join(',');
-const LISTEN_TO_ALL_BUT_AMBIENT = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
-const LISTEN_TO_BOTNAME = [LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION].join(',');
-const LISTEN_TO_ALL = [LISTEN_TO_MESSAGES, LISTEN_TO_AMBIENT, LISTEN_TO_DIRECT_MESSAGE, LISTEN_TO_DIRECT_MENTION, LISTEN_TO_MENTION].join(',');
+import {
+    LISTEN_TO_OTHERS,
+    LISTEN_TO_ALL_BUT_AMBIENT,
+    LISTEN_TO_BOTNAME,
+    LISTEN_TO_ALL
+} from './constants.es6';
 
 
 // TODO(dkg): add a catch all command that catches all direct messages that are not actively handled by
@@ -49,6 +45,7 @@ class CommandManager {
         this.commands.push(new GitCommand(this, LISTEN_TO_BOTNAME));
         this.commands.push(new RandomNumberCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
         this.commands.push(new HelpCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
+        this.commands.push(new KarmaCommand(this, LISTEN_TO_ALL));
     }
 
     onTeamJoin(bot, message) {

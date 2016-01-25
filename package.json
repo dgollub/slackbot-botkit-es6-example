@@ -35,6 +35,7 @@
   ],
   "dependencies": {
     "babel": "^6.*",
+    "babel-cli": "^6.*",
     "botkit": "latest",
     "eslint": "^1.*"
   },

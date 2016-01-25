@@ -1,6 +1,6 @@
 //
 // FactCommand
-// 
+// List a random fact, add facts to a list, etc.
 //
 
 import BaseCommand                  from './BaseCommand.es6';

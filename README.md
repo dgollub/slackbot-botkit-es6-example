@@ -73,6 +73,11 @@ You can see the latest commit message for the current active branch that the bot
 ```
 
 
+## Karma
+
+Well, this is a **WIP** and not done yet. :-)
+
+
 ## Help
 
 The `help` command will display a help text for all available commands (if they provide a help text that is).

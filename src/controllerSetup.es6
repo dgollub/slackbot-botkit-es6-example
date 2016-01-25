@@ -77,26 +77,6 @@ controller.hears(['^hello','^hi'], LISTEN_TO, (bot, message) => {
 }); // hello, hi
 
 
-controller.hears(['^call me (.*)'], LISTEN_TO, (bot, message) => {
-    let matches = message.text.match(/call me (.*)/i);
-    let name = matches[1];
-    
-    controller.storage.users.get(message.user, (err, user) => {
-        if (!user) {
-            user = {
-                id: message.user
-            };
-        }
-        
-        user.name = name;
-
-        controller.storage.users.save(user, (err, id) => {
-            bot.reply(message, `Got it. I will call you ${user.name} from now on.`);
-        });
-    });
-
-}); // call me
-
 
 controller.hears(['what is my name','who am i'], LISTEN_TO, (bot, message) => {
 
@@ -110,35 +90,6 @@ controller.hears(['what is my name','who am i'], LISTEN_TO, (bot, message) => {
 
 }); // what is my name, who am i
 
-
-controller.hears(['^shutdown'], LISTEN_TO, (bot, message) => {
-
-    bot.startConversation(message, (err, conversation) => {
-        conversation.ask("Are you sure you want me to shutdown?", [
-            {
-                pattern: bot.utterances.yes,
-                callback: (response, conversation) => {
-
-                    conversation.say("Bye!");
-                    conversation.next();
-
-                    setTimeout(() => {
-                        process.exit();
-                    }, 500);
-
-                }
-            },
-            {
-                pattern: bot.utterances.no,
-                default:true,
-                callback: (response, conversation) => {
-                    conversation.say("*Phew!*");
-                    conversation.next();
-                }
-            }
-        ]);
-    });
-}); // shutdown
 
 
 controller.hears(['^uptime','identify yourself','who are you','what is your name'], LISTEN_TO,(bot, message) => {

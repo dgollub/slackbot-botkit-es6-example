@@ -129,7 +129,8 @@ class GitCommand extends BaseCommand {
                         
                         conversation.say("Updated from origin. Restart is not implement yet, so you have to do this manually.");
 
-                        // TODO(dkg): Figure out how to restart ourselves ...
+                        // TODO(dkg): Figure out how to restart ourselves ... maybe add a git hook
+                        //            that restarts the bot after N seconds?!
 
                         // let cmd = `sleep 2 && nohup npm start &`;
                         // exec({
