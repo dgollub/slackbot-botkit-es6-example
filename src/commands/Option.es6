@@ -48,7 +48,9 @@ class Option {
 
         for (let i = 0; i < regexes.length; i++) {
             let [ option, regex ] = [ options[i], regexes[i] ];
-
+            // TODO(dkg): we also want to probably not insist that a command must "start" with
+            //            a certain pattern. Maybe allow to match more general terms in message/texts
+            //            not just at the start of the string. 
             let cmd = option.length === 0 ? `^${command}${regex}` : `^${command} ${regex}`;
             commands.push(cmd);
         }

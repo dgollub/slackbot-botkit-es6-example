@@ -65,13 +65,13 @@ let sqlInsert = async (table, fieldsToUse, valuesToInsert) => {
     let fields = [].concat(fieldsToUse);
     let values = [].concat(valuesToInsert);
 
-    console.log("db fields", fields);
-    console.log("db values", values);
+    // console.log("db fields", fields);
+    // console.log("db values", values);
 
     let p = new Promise((resolve, reject) => {
 
         let vs = values.length === 1 ? "?" : "?, ".repeat(values.length);
-        console.log("testing", vs);
+        // console.log("testing", vs);
 
         let pos = vs.lastIndexOf("?,");
 
@@ -79,7 +79,7 @@ let sqlInsert = async (table, fieldsToUse, valuesToInsert) => {
 
         let sql = `INSERT INTO ${table} (${fields.join(", ")}) VALUES (${vs}) `;
 
-        console.log("vs", vs);
+        // console.log("vs", vs);
         console.log("sql", sql);
         
         // NOTE(dkg): have to use ES5 syntax for callback, because ES6 fat arrow functions
