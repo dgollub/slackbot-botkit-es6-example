@@ -106,7 +106,7 @@ class AdminCommand extends BaseCommand {
                 if (pwd === SUPERUSER_PWD) {
                     fnGetAdminListAndReply(conversation);
                 } else {
-                    conversation.say("You are off the project!");
+                    conversation.say("You are not worthy!");
                     conversation.next();
                 }
             }); // conversation.ask(pwd pls)
