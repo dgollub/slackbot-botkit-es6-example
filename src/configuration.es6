@@ -51,7 +51,7 @@ const config = {
                 name: "naughty",
                 factor: 0,
                 points: -20,
-                reason: "using a bad word",
+                reason: "using a naughty word",
                 feedback: false,
                 listenTo: [
                     /(fuck|cum guzzling whore|ball tickler)/gi,
