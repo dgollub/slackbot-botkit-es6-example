@@ -20,6 +20,7 @@ const config = {
                 feedback: false,
                 // TODO(dkg): maybe have a different factor or points for each regex here? 
                 //            and the ones defined above are the defaults for this "group"?
+                // Good regex tester for JS: https://regex101.com/
                 listenTo: [
                     /(yay\!|good god|this is such bullshit|this is bullshit)/gi,
                     /(Praise the lord|back on the menu|meatballs)/gi,
@@ -41,9 +42,9 @@ const config = {
                 reason: "using a bad word",
                 feedback: false,
                 listenTo: [
-                    /(shit|damn|asshole|biff|nazi|sexist)/gi,
+                    /(shit|damn|asshole|biff|nazi|sexist|grammar police|grammar nazi)/gi,
                     /(weeaboo|wtf|wth|piss off|fuck off)/gi,
-                    /(synergy|win|fail|performance)/gi,
+                    /(synergy|win|fail|performance|screw you)/gi,
                     /(.*)lol\W/gi,
                 ],
             },

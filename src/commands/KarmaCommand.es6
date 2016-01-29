@@ -71,7 +71,8 @@ class KarmaCommand extends BaseCommand {
     constructor(manager, listenToTypes) {
         console.log("KarmaCommand");
 
-        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes);
+        let hideCommand = true;
+        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes, hideCommand);
 
         this.onGetCurrentKarma = this.onGetCurrentKarma.bind(this);
         this.onCertainWord = this.onCertainWord.bind(this);
@@ -88,13 +89,6 @@ class KarmaCommand extends BaseCommand {
         ];
 
         this.setupOptions(options);
-
-        // Some extra listeners that should not show up in the help text.
-        // TODO(dkg): make those words configurable - maybe in the db as well?
-        // TODO(dkg): what about "love your shit, you damn genius"??? lol
-        // TODO(dkg): maybe we don't want a bot.reply feedback, only a private message?
-        //            as the user should not really know what words trigger this?! Hmmm.
-        //            not sure - need to figure that out later
 
         const self = this;
 
@@ -139,8 +133,8 @@ class KarmaCommand extends BaseCommand {
                 bot.reply(message, msg);
 
             } else {
-                const feedback = karma < 0 ? "catastrophic" : "solid";
-                bot.reply(message, `Looks like ${user.name}'s karma is a ${feedback} ${karma} right now.`);
+                const feedback = karma < 0 ? "abysmal" : "a solid";
+                bot.reply(message, `Looks like ${user.name}'s karma is ${feedback} ${karma} right now.`);
             }
         } catch(err) {
             console.error(`Could not read or set karma. Reason: ${err.message}`);

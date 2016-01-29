@@ -66,6 +66,9 @@ class HelpCommand extends BaseCommand {
             reply.push("Available commands are:\n");
 
             for (let cmd of commands) {
+                if (cmd.hideCommand) {
+                    continue;
+                }
                 let msg = fnFormatCommandHelp(cmd);
                 reply.push(msg);
             }

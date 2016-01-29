@@ -40,7 +40,8 @@ class AdminCommand extends BaseCommand {
     constructor(manager, listenToTypes) {
         console.log("AdminCommand");
 
-        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes);
+        let hideCommand = true;
+        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes, hideCommand);
 
         this.onAddAdmin = this.onAddAdmin.bind(this);
         this.onDeleteAdmin = this.onDeleteAdmin.bind(this);

@@ -75,12 +75,15 @@ You can see the latest commit message for the current active branch that the bot
 
 ## Karma
 
-Try `help karma` to see what's available. And have a look at the `configuration.es6` file to get an idea on how it works. If you want to see the details, please look at `src/commands/KarmaCommand.es6`.
+Try `@botname help karma` to see what's available. And have a look at the `configuration.es6` file to get an idea on how it works. If you want to see the details, please look at `src/commands/KarmaCommand.es6`.
+
+You will need to know Regular Expressions for the Karma configuration. A very good regex tester for JavaScript can be found here: https://regex101.com/
+
 
 
 ## Help
 
-The `help` command will display a help text for all available commands (if they provide a help text that is).
+The `@botname help` command will display a help text for all available commands (if they provide a help text that is).
 
 
 # TODO
@@ -88,6 +91,19 @@ The `help` command will display a help text for all available commands (if they 
 - add a catch all command that catches all direct messages that are not actively handled by an assigned/specialized command and return a message ala "sorry, command unknown - try again" message (or use fuzzy logic to suggest a more sutable command)
 
 - ...
+
+
+
+# Annoyance / Current limitation / API design
+
+Something that is annoying with the current design (and maybe that is a limit of the slackbot API, not sure?): there is no fallthrough in the message handling. That is, after a message is handled by one command, it can not be handled by another command. 
+
+That’s limiting. 
+
+I would love have the karma command handle things completely silently, but after it is done, other commands could still execute against the message. That’s not working right now and I have no clue how I would do it, unless I rewrite the whole thing to have just ONE callback that is execute for every message and I do the message parsing completely on my own. Not ideal, but likely the only viable solution right now.
+
+
+
 
 
 # Copyright

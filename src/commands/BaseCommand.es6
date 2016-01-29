@@ -11,10 +11,11 @@ import { removeCommandFromMessage } from '../utils.es6';
 class BaseCommand {
 
     // TODO(dkg): fix this
-    constructor(name, briefDescription, manager, listenToTypes) {
+    constructor(name, briefDescription, manager, listenToTypes, hideCommand=false) {
         this.name = name;
         this.briefDescription = briefDescription || "Sorry, no command description available.";
         this.manager = manager;
+        this.hideCommand = hideCommand || false;
         this.listenToTypes = listenToTypes || null;
         this.controller = manager.controller;
         this.slackInfo = manager.slackInfo;

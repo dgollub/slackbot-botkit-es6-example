@@ -12,8 +12,11 @@ import GitCommand           from './commands/GitCommand.es6';
 import HelpCommand          from './commands/HelpCommand.es6';
 import KarmaCommand         from './commands/KarmaCommand.es6';
 import RandomNumberCommand  from './commands/RandomNumberCommand.es6';
+import UptimeCommand        from './commands/UptimeCommand.es6';
+import CatchAllCommand      from './commands/CatchAllCommand.es6';
 
 import {
+    LISTEN_TO_DIRECT_MESSAGE,
     LISTEN_TO_OTHERS,
     LISTEN_TO_ALL_BUT_AMBIENT,
     LISTEN_TO_BOTNAME,
@@ -46,6 +49,10 @@ class CommandManager {
         this.commands.push(new RandomNumberCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
         this.commands.push(new HelpCommand(this, LISTEN_TO_ALL_BUT_AMBIENT));
         this.commands.push(new KarmaCommand(this, LISTEN_TO_ALL));
+        this.commands.push(new UptimeCommand(this, LISTEN_TO_BOTNAME));
+
+        // This must be the last command to add in order for it to work!
+        this.commands.push(new CatchAllCommand(this, LISTEN_TO_BOTNAME));
     }
 
     onTeamJoin(bot, message) {
