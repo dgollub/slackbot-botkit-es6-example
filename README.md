@@ -75,7 +75,7 @@ You can see the latest commit message for the current active branch that the bot
 
 ## Karma
 
-Well, this is a **WIP** and not done yet. :-)
+Try `help karma` to see what's available. And have a look at the `configuration.es6` file to get an idea on how it works. If you want to see the details, please look at `src/commands/KarmaCommand.es6`.
 
 
 ## Help
