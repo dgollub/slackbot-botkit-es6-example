@@ -75,9 +75,9 @@ class KarmaCommand extends BaseCommand {
         super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes, hideCommand);
 
         this.onGetCurrentKarma = this.onGetCurrentKarma.bind(this);
-        this.onCertainWord = this.onCertainWord.bind(this);
         this.onGetKarmaDetail = this.onGetKarmaDetail.bind(this);
-
+        this.onCertainWord = this.onCertainWord.bind(this);
+        
         // TODO(dkg): maybe we want different listenToTypes per subcommand/options????
         // TODO(dkg): we also want to probably not insist that a command must "start" with
         //            a certain pattern. Maybe allow to match more general terms in message/texts

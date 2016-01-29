@@ -8,7 +8,7 @@ import Option                       from './Option.es6';
 
 
 const COMMAND = "catchall";
-const BRIEF_DESCRIPTION = `displays the current uptime of the bot`;
+const BRIEF_DESCRIPTION = `shows a short "unknown command" message`;
 
 
 class CatchAllCommand extends BaseCommand {
@@ -16,7 +16,8 @@ class CatchAllCommand extends BaseCommand {
     constructor(manager, listenToTypes) {
         console.log("CatchAllCommand");
 
-        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes);
+        let hideCommand = true;
+        super(COMMAND, BRIEF_DESCRIPTION, manager, listenToTypes, hideCommand);
 
         this.onCatchAll = this.onCatchAll.bind(this);
 
