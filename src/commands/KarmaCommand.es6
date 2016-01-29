@@ -211,7 +211,9 @@ class KarmaCommand extends BaseCommand {
             } else if (!isNaN(parseFloat(points))) {
                 if (factor != 0) {
                     karmaPointsForThis = factor * points;
-                } 
+                } else {
+                    karmaPointsForThis = points;
+                }
             }
             if (karmaPointsForThis === null) {
                 // ??? why?!
