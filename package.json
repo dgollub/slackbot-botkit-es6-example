@@ -11,7 +11,7 @@
     "create:build-folders": "mkdir -p build",
     "lint": "eslint --max-warnings 9999 ./src/**",
     "start": "node server.js",
-    "tests": "mocha --compilers es6:babel-core/register src/tests.es6",
+    "test": "mocha --compilers es6:babel-core/register src/tests.es6",
     "watch:es6": "babel src server.js --watch -d build --source-maps inline",
     "watch:lint": "watch 'npm run lint' ./src",
     "help": "babel --help"
@@ -35,7 +35,7 @@
   ],
   "dependencies": {
     "babel": "^6.*",
-    "babel-cli": "^6.*",
+    "babel-cli": "^6.4.5",
     "botkit": "latest",
     "eslint": "^1.*"
   },

@@ -46,7 +46,7 @@ let initializeDatabaseTables = () => {
 };
 
 
-let sqlSelect = async (sql) => {
+let sqlSelect = (sql) => {
 
     let p = new Promise((resolve, reject) => {        
         db.all(sql, [], (err, rows) => {
@@ -61,7 +61,7 @@ let sqlSelect = async (sql) => {
     return p;
 };
 
-let sqlInsert = async (table, fieldsToUse, valuesToInsert) => {
+let sqlInsert = (table, fieldsToUse, valuesToInsert) => {
     let fields = [].concat(fieldsToUse);
     let values = [].concat(valuesToInsert);
 
@@ -96,12 +96,13 @@ let sqlInsert = async (table, fieldsToUse, valuesToInsert) => {
         });
     });
 
-    let stmt = await p;
+    // let stmt = await p;
 
-    return stmt;
+    // return stmt;
+    return p;
 };
 
-let sqlUpdate = async (table, id, fieldsToUse, valuesToInsert) => {
+let sqlUpdate = (table, id, fieldsToUse, valuesToInsert) => {
     let fields = [].concat(fieldsToUse);
     let values = [].concat(valuesToInsert);
     let sql = `UPDATE ${table} SET `;
@@ -134,13 +135,14 @@ let sqlUpdate = async (table, id, fieldsToUse, valuesToInsert) => {
         });
     });
 
-    let stmt = await p;
+    // let stmt = await p;
 
-    return stmt;
+    // return stmt;
+    return p;
 };
 
 // TODO(dkg): this and sqlUpdate look quite similar, maybe merge them?!
-let sqlDelete = async (table, fieldsToUse, valuesForWhere) => {
+let sqlDelete = (table, fieldsToUse, valuesForWhere) => {
     let fields = [].concat(fieldsToUse);
     let values = [].concat(valuesForWhere);
     let sql = `DELETE FROM ${table} WHERE `;
@@ -172,9 +174,10 @@ let sqlDelete = async (table, fieldsToUse, valuesForWhere) => {
         });
     });
 
-    let stmt = await p;
+    // let stmt = await p;
 
-    return stmt;
+    // return stmt;
+    return p;
 };
 
 export {
