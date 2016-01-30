@@ -96,6 +96,16 @@ class BaseCommand {
         return `*${this.name}* ${this.briefDescription}.`;
     }
 
+    startTyping(bot, message) {
+        // TODO(dkg): this does not seem to work properly ... sigh
+        setTimeout(() => {
+            if (typeof bot.startTyping == "function") {
+                bot.startTyping(message);
+            } else {
+                bot.reply(message, { type: 'typing' });
+            }
+        }, 16);
+    }
 }
 
 

@@ -38,7 +38,9 @@
     "babel-cli": "^6.4.5",
     "base64-img": "^1.0.3",
     "botkit": "latest",
+    "download": "^4.4.3",
     "eslint": "^1.*",
+    "file-download": "^0.1.2",
     "form-data": "^1.0.0-rc3"
   },
   "devDependencies": {
