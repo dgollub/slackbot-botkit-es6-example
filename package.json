@@ -51,7 +51,7 @@
     "babel-preset-stage-0": "^6.*",
     "babel-preset-stage-1": "^6.*",
     "bluebird": "^3.*",
-    "lodash": "^3.*",
+    "lodash": "^4.*",
     "mocha": "^2.*",
     "nodegit": "latest",
     "sqlite3": "^3.*",

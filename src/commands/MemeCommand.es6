@@ -12,11 +12,12 @@ import { getAdminList }             from './AdminCommand.es6';
 
 import { formatUptime, privateMsgToUser } from '../utils.es6';
 
-import _ from 'lodash';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import download from 'file-download';
+
+const _ = require('lodash');
 
 const exec = require('child_process').exec;
 
@@ -46,7 +47,7 @@ class MemeCommand extends BaseCommand {
         this.onMemeShowKeyword = this.onMemeShowKeyword.bind(this);
 
         const options = [
-            new Option(this.name, ["list", "all"], ["list$", "all$"], "", this.onMemeList, "list all available meme files"),
+            new Option(this.name, ["list", "all"], ["list", "all"], ["[<keyword>]"], this.onMemeList, "list all available meme files"),
             new Option(this.name, ["add", "upload"], ["add", "upload"], ["<url>", "[<save as filename>]"], this.onMemeUpload, "upload a new meme file", true),
             new Option(this.name, ["rnd", "random"], ["rnd", "random"], "", this.onMemeShowRandom, BRIEF_DESCRIPTION),
             new Option(this.name, ["", "keyword"], ["", "keyword"], ["<keyword>"], this.onMemeShowKeyword, BRIEF_DESCRIPTION),
@@ -66,20 +67,7 @@ class MemeCommand extends BaseCommand {
         return files || [];
     }
 
-    async onMemeShowRandom(bot, message) {
-        console.log("onMemeShowRandom");
-
-        // TODO(dkg): get a list of all fiels in the meme folder and select one either
-        //            randomly or via supplied keyword
-        let files = this.getMemeFiles();
-
-        if (files.length === 0) {
-            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
-            bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
-            return;
-        }
-
-        let filename = _.sample(files); //"napoleon dynamite - gosh.jpg";
+    sendMemeFile(bot, message, filename) {
         let fullfilename = path.join(MEME_PATH, filename);
 
         console.log("fullfilename", fullfilename);
@@ -103,10 +91,8 @@ class MemeCommand extends BaseCommand {
 
     }
 
-    async onMemeList(bot, message) {
+    async onMemeShowRandom(bot, message) {
         console.log("onMemeShowRandom");
-
-        this.startTyping(bot, message);
 
         // TODO(dkg): get a list of all fiels in the meme folder and select one either
         //            randomly or via supplied keyword
@@ -116,6 +102,30 @@ class MemeCommand extends BaseCommand {
             console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
             bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
             return;
+        }
+
+        let filename = _.sample(files); //"napoleon dynamite - gosh.jpg";
+        
+        this.sendMemeFile(bot, message, filename);
+    }
+
+    async onMemeList(bot, message) {
+        console.log("onMemeShowRandom");
+
+        // TODO(dkg): get a list of all fiels in the meme folder and select one either
+        //            randomly or via supplied keyword
+        let files = this.getMemeFiles();
+
+        if (files.length === 0) {
+            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
+            bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
+            return;
+        }
+
+        let bestMatches = this.getBestMatches(bot, message, files, this.onMemeShowKeyword);
+
+        if (!!bestMatches) {
+            files = _.map(bestMatches, (m) => m.file);
         }
 
         let reply = ["```"];
@@ -231,14 +241,86 @@ class MemeCommand extends BaseCommand {
         
     }
 
+    getBestMatches(bot, message, files, fn) {
+        let passedArgs = (this.getCommandArguments(message, fn) || "").replace("<", "").replace(">", "");
+        let args = passedArgs.includes(" ") ? passedArgs.trim().split(" ") : [passedArgs.trim()];
+
+        if (passedArgs === "") return null;
+
+        console.log("passedArgs", passedArgs);
+        console.log("args", args);
+        
+        // TODO(dkg): let the user also do "list <keyword>" and have the same algorithm run
+        let matches = [];
+        // TODO(dkg): quite the hackish way of doing this, but whatever ... it kinda works
+        for (let arg of args) {
+            let larg = arg.toLowerCase();
+            for (let file of files) {
+                console.log("file vs arg", file, arg);
+                if (file.toLowerCase().includes(larg)) {
+                    console.log("found!");
+                    let m = _.find(matches, (m) => m.file === file);
+                    console.log("???? m", m);;
+                    if (!!m) {                        
+                        m.count++;
+                        m.keywords.push(arg);
+                    } else {
+                        m = {
+                            file: file,
+                            count: 1,
+                            keywords: [arg]
+                        };
+                        matches.push(m);
+                    }
+                }
+            }
+        }
+
+        console.log("matches", matches);
+
+        let sorted = _.orderBy(matches, "count", "desc");
+        let bestMatches = null;
+
+        console.log("matches sorted", sorted);
+
+        if (sorted.length > 1) {
+            bestMatches = _.filter(sorted, (m) => m.count === sorted[0].count);
+        } else {
+            bestMatches = sorted.length > 0 ? [sorted[0]] : false;
+        }
+
+        console.log("bestMatches for args", bestMatches, args);
+
+        return bestMatches;
+    }
+
     onMemeShowKeyword(bot, message) {
         console.log("onMemeShowKeyword");
 
         this.startTyping(bot, message);
 
+        let files = this.getMemeFiles();
 
+        if (files.length === 0) {
+            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
+            bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
+            return;
+        }
 
-        bot.reply(message, "TODO");
+        let bestMatches = this.getBestMatches(bot, message, files, this.onMemeShowKeyword) || [];
+        let filename = false;
+
+        if (bestMatches.length > 0) {
+            let bestMatch = _.sample(bestMatches);
+            filename = !!bestMatch ? bestMatch.file : null;
+        }
+
+        if (!!filename) {
+            this.sendMemeFile(bot, message, filename);
+        } else {
+            bot.reply(message, "Sorry, your keyword(s) didn't match any meme files in my system.");
+        }
+
     }
 
 }
