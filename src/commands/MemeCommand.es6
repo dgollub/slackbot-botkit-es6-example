@@ -103,11 +103,8 @@ class MemeCommand extends BaseCommand {
         for (let arg of args) {
             let larg = arg.toLowerCase();
             for (let file of files) {
-                console.log("file vs arg", file, arg);
                 if (file.toLowerCase().includes(larg)) {
-                    console.log("found!");
                     let m = _.find(matches, (m) => m.file === file);
-                    console.log("???? m", m);;
                     if (!!m) {                        
                         m.count++;
                         m.keywords.push(arg);
