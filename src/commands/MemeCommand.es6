@@ -91,6 +91,50 @@ class MemeCommand extends BaseCommand {
 
     }
 
+    getBestMatches(bot, message, files, fn) {
+        let passedArgs = (this.getCommandArguments(message, fn) || "").replace("<", "").replace(">", "");
+        let args = passedArgs.includes(" ") ? passedArgs.trim().split(" ") : [passedArgs.trim()];
+
+        if (passedArgs === "") return null;
+
+        // TODO(dkg): let the user also do "list <keyword>" and have the same algorithm run
+        let matches = [];
+        // TODO(dkg): quite the hackish way of doing this, but whatever ... it kinda works
+        for (let arg of args) {
+            let larg = arg.toLowerCase();
+            for (let file of files) {
+                console.log("file vs arg", file, arg);
+                if (file.toLowerCase().includes(larg)) {
+                    console.log("found!");
+                    let m = _.find(matches, (m) => m.file === file);
+                    console.log("???? m", m);;
+                    if (!!m) {                        
+                        m.count++;
+                        m.keywords.push(arg);
+                    } else {
+                        m = {
+                            file: file,
+                            count: 1,
+                            keywords: [arg]
+                        };
+                        matches.push(m);
+                    }
+                }
+            }
+        }
+
+        let sorted = _.orderBy(matches, "count", "desc");
+        let bestMatches = null;
+
+        if (sorted.length > 1) {
+            bestMatches = _.filter(sorted, (m) => m.count === sorted[0].count);
+        } else {
+            bestMatches = sorted.length > 0 ? [sorted[0]] : false;
+        }
+
+        return bestMatches;
+    }
+
     async onMemeShowRandom(bot, message) {
         console.log("onMemeShowRandom");
 
@@ -104,7 +148,7 @@ class MemeCommand extends BaseCommand {
             return;
         }
 
-        let filename = _.sample(files); //"napoleon dynamite - gosh.jpg";
+        let filename = _.sample(files);
         
         this.sendMemeFile(bot, message, filename);
     }
@@ -145,8 +189,6 @@ class MemeCommand extends BaseCommand {
         let isAdmin = await this.isAdmin(bot, message);
 
         if (!isAdmin) return;
-
-        console.log("isAdmin", isAdmin);
 
         this.startTyping(bot, message);
 
@@ -239,59 +281,6 @@ class MemeCommand extends BaseCommand {
             bot.reply(message, msg);
         });
         
-    }
-
-    getBestMatches(bot, message, files, fn) {
-        let passedArgs = (this.getCommandArguments(message, fn) || "").replace("<", "").replace(">", "");
-        let args = passedArgs.includes(" ") ? passedArgs.trim().split(" ") : [passedArgs.trim()];
-
-        if (passedArgs === "") return null;
-
-        console.log("passedArgs", passedArgs);
-        console.log("args", args);
-        
-        // TODO(dkg): let the user also do "list <keyword>" and have the same algorithm run
-        let matches = [];
-        // TODO(dkg): quite the hackish way of doing this, but whatever ... it kinda works
-        for (let arg of args) {
-            let larg = arg.toLowerCase();
-            for (let file of files) {
-                console.log("file vs arg", file, arg);
-                if (file.toLowerCase().includes(larg)) {
-                    console.log("found!");
-                    let m = _.find(matches, (m) => m.file === file);
-                    console.log("???? m", m);;
-                    if (!!m) {                        
-                        m.count++;
-                        m.keywords.push(arg);
-                    } else {
-                        m = {
-                            file: file,
-                            count: 1,
-                            keywords: [arg]
-                        };
-                        matches.push(m);
-                    }
-                }
-            }
-        }
-
-        console.log("matches", matches);
-
-        let sorted = _.orderBy(matches, "count", "desc");
-        let bestMatches = null;
-
-        console.log("matches sorted", sorted);
-
-        if (sorted.length > 1) {
-            bestMatches = _.filter(sorted, (m) => m.count === sorted[0].count);
-        } else {
-            bestMatches = sorted.length > 0 ? [sorted[0]] : false;
-        }
-
-        console.log("bestMatches for args", bestMatches, args);
-
-        return bestMatches;
     }
 
     onMemeShowKeyword(bot, message) {
