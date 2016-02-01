@@ -140,7 +140,7 @@ class MemeCommand extends BaseCommand {
         let files = this.getMemeFiles();
 
         if (files.length === 0) {
-            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
+            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image files first.`);
             bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
             return;
         }
@@ -158,7 +158,7 @@ class MemeCommand extends BaseCommand {
         let files = this.getMemeFiles();
 
         if (files.length === 0) {
-            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
+            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image files first.`);
             bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
             return;
         }
@@ -288,7 +288,7 @@ class MemeCommand extends BaseCommand {
         let files = this.getMemeFiles();
 
         if (files.length === 0) {
-            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image fiels first.`);
+            console.warn(`No meme image files found in folder ${MEME_PATH}. Please add some image files first.`);
             bot.reply(message, "There are no meme images available on the server. Maybe you should add some first?");
             return;
         }
